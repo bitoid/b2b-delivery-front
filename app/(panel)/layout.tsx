@@ -1,11 +1,6 @@
-
-
 import Navigation from "@/components/Navigation";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-
-import Link from "next/link";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,14 +13,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  
-  
 
   return (
     <html lang="en" className="bg-gray-100">
       <body className={inter.className}>
-      <Navigation/>
-        {children}</body>
+        <Navigation />
+
+        {children}
+      </body>
     </html>
   );
 }
