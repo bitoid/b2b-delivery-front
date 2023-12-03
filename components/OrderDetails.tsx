@@ -20,9 +20,9 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"
-                  className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
                 >
-                  შეცვლა
+                  განახლება
                 </button>
               </span>
             </dd>
@@ -36,9 +36,9 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"
-                  className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
                 >
-                  შეცვლა
+                  განახლება
                 </button>
               </span>
             </dd>
@@ -52,9 +52,9 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"
-                  className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
                 >
-                  შეცვლა
+                  განახლება
                 </button>
               </span>
             </dd>
@@ -68,9 +68,9 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"
-                  className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
                 >
-                  შეცვლა
+                  განახლება
                 </button>
               </span>
             </dd>
@@ -84,9 +84,9 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"
-                  className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
                 >
-                  შეცვლა
+                  განახლება
                 </button>
               </span>
             </dd>

@@ -25,7 +25,7 @@ export default function ProfilePage() {
                 type="button"
                 className="font-semibold text-indigo-600 hover:text-indigo-500"
               >
-                Update
+                განახლება
               </button>
             </dd>
           </div>
@@ -48,7 +48,7 @@ export default function ProfilePage() {
                 type="button"
                 className="font-semibold text-indigo-600 hover:text-indigo-500"
               >
-                Update
+                განახლება
               </button>
             </dd>
           </div>
@@ -64,7 +64,7 @@ export default function ProfilePage() {
                   type="button"
                   className="font-semibold text-indigo-600 hover:text-indigo-500"
                 >
-                  Update
+                  განახლება
                 </button>
               </dd>
             </div>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
                     type="button"
                     className="font-semibold text-indigo-600 hover:text-indigo-500"
                   >
-                    Update
+                    განახლება
                   </button>
                 </dd>
               </div>
@@ -97,7 +97,7 @@ export default function ProfilePage() {
                       type="button"
                       className="font-semibold text-indigo-600 hover:text-indigo-500"
                     >
-                      Update
+                      განახლება
                     </button>
                   </dd>
                 </div>
