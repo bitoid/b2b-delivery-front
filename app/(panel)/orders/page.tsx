@@ -54,6 +54,7 @@ export default function OrdersPage() {
                     {clientRows.map((item, index) => (
                       <th
                         scope="col"
+                        key={index}
                         className={cn(
                           " py-3.5 text-left text-sm font-semibold text-gray-900",
                           index !== 0 ? "px-3" : ""
@@ -66,7 +67,7 @@ export default function OrdersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {orders.map((order) => (
-                    <ClientOrder order={order} />
+                    <ClientOrder order={order} key={order.id}/>
                   ))}
                 </tbody>
               </table>
