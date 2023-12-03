@@ -7,7 +7,6 @@ interface ClientOrderType {
   comment: string;
   price: number;
   courierPrice: number;
-  total: () => number;
 }
 
 export type { ClientOrderType };

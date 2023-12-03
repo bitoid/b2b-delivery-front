@@ -15,12 +15,12 @@ export default function OrdersPage() {
       phone: "579-09-55-87",
       address: "გურამიშვილის 9",
       //თანხა არ ვიცი ჯერ რას ნიშნავს
-      comment: "",
+      comment: `Fugiat ipsum ipsum deserunt culpa aute sint do nostrud anim incididunt cillum culpa consequat. Excepteur
+      qui ipsum aliquip consequat sint. Sit id mollit nulla mollit nostrud in ea officia proident. Irure
+      nostrud pariatur mollit ad adipisicing reprehenderit deserunt qui eu.`,
       price: 200,
       courierPrice: 10,
-      total: function () {
-        return this.price + this.courierPrice;
-      },
+    
     },
     {
       id: 2,
@@ -32,9 +32,7 @@ export default function OrdersPage() {
       comment: "",
       price: 200,
       courierPrice: 10,
-      total: function () {
-        return this.price + this.courierPrice;
-      },
+      
     },
     // More people...
   ];
@@ -45,6 +43,7 @@ export default function OrdersPage() {
     "ნივთის ღირებულება",
     "საკურიერო",
     "ჯამი",
+    
     
   ];
   return (
