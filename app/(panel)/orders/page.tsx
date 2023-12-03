@@ -20,7 +20,6 @@ export default function OrdersPage() {
       nostrud pariatur mollit ad adipisicing reprehenderit deserunt qui eu.`,
       price: 200,
       courierPrice: 10,
-    
     },
     {
       id: 2,
@@ -32,7 +31,6 @@ export default function OrdersPage() {
       comment: "",
       price: 200,
       courierPrice: 10,
-      
     },
     // More people...
   ];
@@ -43,8 +41,6 @@ export default function OrdersPage() {
     "ნივთის ღირებულება",
     "საკურიერო",
     "ჯამი",
-    
-    
   ];
   return (
     <>

@@ -99,17 +99,12 @@ export default function ProfilePage() {
             </dl>
           </dl>
         </dl>
-
-       
       </div>
 
       <div>
         <h2 className="text-base font-semibold leading-7 text-gray-900">
           მისამართები
         </h2>
-       
-
-       
 
         <div className="flex border-t border-gray-100 pt-6">
           <button
