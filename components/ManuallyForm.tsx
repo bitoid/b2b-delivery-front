@@ -1,11 +1,9 @@
-import React from "react";
-
-export default function AddOrderForm() {
+export default function ManuallyForm() {
   return (
     <form
-      className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl md:col-span-2"
+      className=""
       onSubmit={async (e) => {
-        e.preventDefault()
+        e.preventDefault();
         let response = await fetch(`${process.env.API_URL}/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -24,7 +22,7 @@ export default function AddOrderForm() {
           }),
         });
 
-        console.log( response.status)
+        console.log(response.status);
       }}
     >
       <div className="px-4 py-6 sm:p-8">
@@ -137,8 +135,7 @@ export default function AddOrderForm() {
               />
             </div>
           </div>
-
-          <div className="col-span-full ">
+          <div className="col-span-full sm:flex gap-[100px]">
             <div>
               <label
                 htmlFor="price"
@@ -152,16 +149,31 @@ export default function AddOrderForm() {
                   name="price"
                   id="price"
                   autoComplete="price"
-                  className="block w-[50%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-[100%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
-            <div className="mt-5">
-              <p className="italic">საკურიერო:</p>
-              <p className="italic">ჯამი:</p>
+            <div>
+              <label
+                htmlFor="price"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                საკურიერო
+              </label>
+              <div className="mt-2">
+                <input
+                  type="text"
+                  name="price"
+                  id="price"
+                  autoComplete="price"
+                  className="block w-[100%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
             </div>
           </div>
         </div>
+
+        <p className="italic mt-[20px] font-bold">ჯამი:</p>
       </div>
       <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
         <button

@@ -1,16 +1,21 @@
 "use client";
 
-import { Fragment } from "react";
+import { useState, Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BellIcon,
+  PlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import AddOrder from "./AddOrder";
 
 export default function Navigation() {
   const navigation = [
     { name: "გაგზავნილი შეკვეთები", href: "/orders" },
-    { name: "შეკვეთის დამატება", href: "/add-order" },
   ];
   const userNavigation = [
     { name: "პროფილი", href: "/profile" },
@@ -37,6 +42,8 @@ export default function Navigation() {
   };
 
   const path = usePathname();
+
+  const [isAdd, setIsAdd] = useState(false);
 
   return (
     <>
@@ -209,13 +216,32 @@ export default function Navigation() {
 
       <div className="bg-gray-800 pb-32">
         <header className="py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between">
             <h1 className="text-3xl font-bold tracking-tight text-white">
               {getPageTitle(path)}
             </h1>
+            {path == "/orders" && (
+              <button
+                type="button"
+                onClick={() => setIsAdd(true)}
+                className="rounded-full  flex gap-2 items-center bg-indigo-600 p-3 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                შეკვეთის დამატება
+                <PlusIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            )}
           </div>
         </header>
       </div>
+      {isAdd && (
+        <>
+          <AddOrder  />{" "}
+          <div
+            onClick={() => setIsAdd(false)}
+            className="w-[100vw] h-[100vh] absolute bg-black top-0 z-5 left-0 opacity-60"
+          ></div>
+        </>
+      )}
     </>
   );
 }
