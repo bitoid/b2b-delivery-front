@@ -11,12 +11,28 @@ export default function OrderDetails({ order }: { order: ClientOrderType }) {
       </div>
       <div className="mt-6 border-t border-gray-100">
         <dl className="divide-y divide-gray-100">
-          <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt className="text-sm font-bold leading-6 text-gray-900">
-              სახელი და გვარი
+        <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+            <dt className="text-sm font-medium leading-6 text-gray-900">
+              სახელი
             </dt>
             <dd className="mt-1 flex text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-              <span className="flex-grow">{order.fullName}</span>
+              <span className="flex-grow">{order.firstName}</span>
+              <span className="ml-4 flex-shrink-0">
+                <button
+                  type="button"
+                  className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
+                >
+                  განახლება
+                </button>
+              </span>
+            </dd>
+          </div>
+          <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+            <dt className="text-sm font-medium leading-6 text-gray-900">
+              გვარი
+            </dt>
+            <dd className="mt-1 flex text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+              <span className="flex-grow">{order.lastName}</span>
               <span className="ml-4 flex-shrink-0">
                 <button
                   type="button"

@@ -1,40 +1,14 @@
 import ClientOrder from "@/components/ClientOrder";
 import { cn } from "@/lib/utils";
+import { ClientOrderType } from "@/types/orders";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
 };
 
-export default function OrdersPage() {
-  const orders = [
-    {
-      id: 1,
-      town: "თბილისი",
-      fullName: "ბექა მაისურაძე",
-      phone: "579-09-55-87",
-      address: "გურამიშვილის 9",
-      //თანხა არ ვიცი ჯერ რას ნიშნავს
-      comment: `Fugiat ipsum ipsum deserunt culpa aute sint do nostrud anim incididunt cillum culpa consequat. Excepteur
-      qui ipsum aliquip consequat sint. Sit id mollit nulla mollit nostrud in ea officia proident. Irure
-      nostrud pariatur mollit ad adipisicing reprehenderit deserunt qui eu.`,
-      price: 200,
-      courierPrice: 10,
-    },
-    {
-      id: 2,
-      town: "თბილისი",
-      fullName: "ბექა მაისურაძე",
-      phone: "579-09-55-87",
-      address: "გურამიშვილის 9",
-      //თანხა არ ვიცი ჯერ რას ნიშნავს
-      comment: "",
-      price: 200,
-      courierPrice: 10,
-    },
-    // More people...
-  ];
-
+export default async function OrdersPage() {
+  const orders: ClientOrderType[] = await getOrders();
   const clientRows = [
     "ქალაქი",
     "სახელი და გვარი",
@@ -67,7 +41,7 @@ export default function OrdersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {orders.map((order) => (
-                    <ClientOrder order={order} key={order.id}/>
+                    <ClientOrder order={order} key={order.id} />
                   ))}
                 </tbody>
               </table>
@@ -78,3 +52,15 @@ export default function OrdersPage() {
     </>
   );
 }
+
+const getOrders = async () => {
+  try {
+    let response = await fetch(`${process.env.API_URL}/orders`, {
+      cache: "no-store",
+    });
+    let orders = await response.json();
+    return orders;
+  } catch (err) {
+    console.log(err);
+  }
+};
