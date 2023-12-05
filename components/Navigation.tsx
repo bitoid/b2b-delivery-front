@@ -1,28 +1,31 @@
 "use client";
 
-import { Fragment } from "react";
+import { useState, Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BellIcon,
+  PlusIcon,
+  XMarkIcon,
+  BuildingOffice2Icon,
+} from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import AddOrder from "./AddOrder";
+import BlackScreen from "./BlackScreen";
 
 export default function Navigation() {
   const navigation = [
     { name: "გაგზავნილი შეკვეთები", href: "/orders" },
-    { name: "შეკვეთის დამატება", href: "/add-order" },
-  ];
-  const userNavigation = [
     { name: "პროფილი", href: "/profile" },
-    { name: "სისტემიდან გასვლა", href: "/login" },
   ];
+  const userNavigation = [{ name: "სისტემიდან გასვლა", href: "/login" }];
 
   const getPageTitle = (href: string) => {
     switch (href) {
       case "/orders":
         return "გაგზავნილი შეკვეთები";
-      case "/add-order":
-        return "შეკვეთის დამატება";
       case "/profile":
         return "პროფილი";
       default:
@@ -30,13 +33,13 @@ export default function Navigation() {
     }
   };
   const user = {
-    name: "Tom Cook",
+    name: "შპს ზუმერი",
     email: "tom@example.com",
-    imageUrl:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
   };
 
   const path = usePathname();
+
+  const [isAdd, setIsAdd] = useState(false);
 
   return (
     <>
@@ -73,7 +76,7 @@ export default function Navigation() {
                     <div className="ml-4 flex items-center md:ml-6">
                       <button
                         type="button"
-                        className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+                        className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white"
                       >
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">View notifications</span>
@@ -83,14 +86,11 @@ export default function Navigation() {
                       {/* Profile dropdown */}
                       <Menu as="div" className="relative ml-3">
                         <div>
-                          <Menu.Button className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
-                            <span className="absolute -inset-1.5" />
-                            <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-8 w-8 rounded-full"
-                              src={user.imageUrl}
-                              alt=""
-                            />
+                          <Menu.Button className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm  ">
+                            <div className="flex gap-[5px] p-1  hover:opacity-80">
+                              <span className="text-white fo">{user.name}</span>
+                              <BuildingOffice2Icon className="block w-6 h-6 company-logo" />
+                            </div>
                           </Menu.Button>
                         </div>
                         <Transition
@@ -166,11 +166,7 @@ export default function Navigation() {
               <div className="border-t border-gray-700 pb-3 pt-4">
                 <div className="flex items-center px-5">
                   <div className="flex-shrink-0">
-                    <img
-                      className="h-10 w-10 rounded-full"
-                      src={user.imageUrl}
-                      alt=""
-                    />
+                    <BuildingOffice2Icon className="block w-6 h-6 company-logo" />
                   </div>
                   <div className="ml-3">
                     <div className="text-base font-medium leading-none text-white">
@@ -209,13 +205,29 @@ export default function Navigation() {
 
       <div className="bg-gray-800 pb-32">
         <header className="py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between">
+            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white">
               {getPageTitle(path)}
             </h1>
+            {path == "/orders" && (
+              <button
+                type="button"
+                onClick={() => setIsAdd(true)}
+                className="rounded-full flex gap-2 items-center bg-indigo-600 p-3 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                შეკვეთის დამატება
+                <PlusIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            )}
           </div>
         </header>
       </div>
+      {isAdd && (
+        <>
+          <AddOrder />{" "}
+          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
+        </>
+      )}
     </>
   );
 }

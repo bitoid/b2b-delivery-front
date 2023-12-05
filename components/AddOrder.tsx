@@ -1,16 +1,17 @@
 "use client";
 
-import AddOrderForm from "@/components/AddOrderForm";
-import UploadExcelForm from "@/components/UploadExcelForm";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import React from "react";
+import ExcelForm from "./ExcelForm";
+import ManuallyForm from "./ManuallyForm";
 
-export default function AddOrderPage() {
+export default function AddOrder() {
   const [manually, setManually] = useState(true);
 
   return (
-    <>
-      <div className="flex gap-3 pb-5">
+    <div className="bg-white shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-10 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
+      <div className="flex gap-3 pl-7 pt-4">
         <button
           type="button"
           className={cn(
@@ -19,7 +20,7 @@ export default function AddOrderPage() {
           )}
           onClick={() => setManually(true)}
         >
-          ხელით
+          ფორმით
         </button>
         <button
           type="button"
@@ -32,8 +33,7 @@ export default function AddOrderPage() {
           ექსელით
         </button>
       </div>
-
-      {manually ? <AddOrderForm /> : <UploadExcelForm />}
-    </>
+      {manually ? <ManuallyForm /> : <ExcelForm />}
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "შეკვეთის დამატება",
+  title: "პროფილი",
 };
 
 export default function RootLayout({
@@ -9,11 +9,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-   
-     <> {children}</>
-             
-        
- 
-  );
+  return <>{children}</>;
 }
