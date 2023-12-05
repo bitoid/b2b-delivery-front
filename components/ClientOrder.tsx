@@ -2,18 +2,41 @@
 
 import { ClientOrderType } from "@/types/orders";
 import { useState } from "react";
-import OrderDetails from "./OrderDetails";
+import EditOrder from "./EditOrder";
+import BlackScreen from "./BlackScreen";
 
 export default function ClientOrder({ order }: { order: ClientOrderType }) {
   const [isDetails, setIsDetails] = useState(false);
+  const [isComment, setIsComment] = useState(false);
+  
   return (
     <>
-      <tr >
+      <tr>
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
           {order.town}
         </td>
         <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
           {order.firstName} {order.lastName}
+        </td>
+        <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+          {order.phone}
+        </td>
+        <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
+          {order.address}
+        </td>
+        <td
+          className=" px-3 py-5 text-sm text-gray-500 cursor-pointer min-w-[120px] relative"
+          onMouseOver={() => setIsComment(true)}
+          onTouchStart={() => setIsComment(true)}
+          onMouseLeave={() => setIsComment(false)}
+        >
+          {isComment && order.comment ? (
+            <span className="bg-white absolute break-words w-[350px] p-2 z-10 rounded-[5px] shadow-2xl">
+              {order.comment}
+            </span>
+          ) : (
+            order.comment.slice(0, 10) + "..."
+          )}
         </td>
         {/* <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
       <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
@@ -35,16 +58,16 @@ export default function ClientOrder({ order }: { order: ClientOrderType }) {
           className=" w-[50px] whitespace-nowrap py-5 text-right text-sm font-semibold sm:pr-0 text-indigo-700 hover:text-indigo-900 hover:cursor-pointer hover:underline"
           onClick={() => setIsDetails(true)}
         >
-          დეტალები
+          განახლება
         </td>
       </tr>
       {isDetails && (
         <>
-          <OrderDetails order={order} />{" "}
-          <div
-            onClick={() => setIsDetails(false)}
-            className="w-[100vw] h-[100vh] absolute bg-black top-0 z-5 left-0 opacity-60"
-          ></div>
+          <EditOrder order={order} />{" "}
+          <BlackScreen
+            isBlackScreen={isDetails}
+            setIsBlackScreen={setIsDetails}
+          />
         </>
       )}
     </>

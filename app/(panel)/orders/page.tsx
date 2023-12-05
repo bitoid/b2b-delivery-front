@@ -12,6 +12,9 @@ export default async function OrdersPage() {
   const clientRows = [
     "ქალაქი",
     "სახელი და გვარი",
+    "ტელ. ნომერ",
+    "მისამართი",
+    "კომენტარი",
     "ნივთის ღირებულება",
     "საკურიერო",
     "ჯამი",
@@ -19,9 +22,8 @@ export default async function OrdersPage() {
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8">
-     
         <div className="mt-8 flow-root">
-          <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="-mx-4 -my-2 overflow-x-auto overflow-y-scroll sm:-mx-6 lg:-mx-8 custom-scroll max-h-[600px]">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
@@ -56,7 +58,7 @@ export default async function OrdersPage() {
 
 const getOrders = async () => {
   try {
-    let response = await fetch(`${process.env.API_URL}/orders`, {
+    let response = await fetch(`http://localhost:4000/orders`, {
       cache: "no-store",
     });
     let orders = await response.json();

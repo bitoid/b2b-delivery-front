@@ -1,31 +1,28 @@
 export default function ManuallyForm() {
   return (
     <form
-      className=""
       onSubmit={async (e) => {
         e.preventDefault();
-        let response = await fetch(`${process.env.API_URL}/orders`, {
+        let response = await fetch(`http://localhost:4000/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: 3,
+            id: Math.random(),
             town: "თბილისი",
             firstName: "ირაკლი",
             lastName: "ალასანია",
             phone: "579-09-55-87",
             address: "გურამიშვილის 9",
-            comment: `Fugiat ipsum ipsum deserunt culpa aute sint do nostrud anim incididunt cillum culpa consequat. Excepteur
-        qui ipsum aliquip consequat sint. Sit id mollit nulla mollit nostrud in ea officia proident. Irure
-        nostrud pariatur mollit ad adipisicing reprehenderit deserunt qui eu.`,
+            comment: `ბლა ბლა ბლა ბლა`,
             price: 200,
             courierPrice: 10,
           }),
         });
 
-        console.log(response.status);
+        console.log(response.statusText);
       }}
     >
-      <div className="px-4 py-6 sm:p-8">
+      <div className="px-4 py-6 sm:p-8 h-[70vh] overflow-y-auto custom-scroll">
         <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <div className="sm:col-span-4">
             <label
@@ -155,7 +152,7 @@ export default function ManuallyForm() {
             </div>
             <div>
               <label
-                htmlFor="price"
+                htmlFor="courier-price"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
                 საკურიერო
@@ -163,8 +160,8 @@ export default function ManuallyForm() {
               <div className="mt-2">
                 <input
                   type="text"
-                  name="price"
-                  id="price"
+                  name="courier-price"
+                  id="courier-price"
                   autoComplete="price"
                   className="block w-[100%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
