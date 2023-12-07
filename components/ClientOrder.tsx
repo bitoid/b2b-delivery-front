@@ -4,15 +4,33 @@ import { ClientOrderType } from "@/types/orders";
 import { useState } from "react";
 import EditOrder from "./EditOrder";
 import BlackScreen from "./BlackScreen";
-
+import { useMarkedOrderStore } from "@/store/orders";
+import { cn } from "@/lib/utils";
 export default function ClientOrder({ order }: { order: ClientOrderType }) {
   const [isDetails, setIsDetails] = useState(false);
   const [isComment, setIsComment] = useState(false);
-  
+    const {markedOrders, add: addMarkedOrders, remove: removeMarkedOrders} = useMarkedOrderStore()
   return (
     <>
-      <tr>
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
+      <tr className={cn(" rounded-[10px]", markedOrders.indexOf(order.id) != -1 ? "bg-[#c2dbff]": "")}>
+        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0 ">
+          <input
+            id="comments"
+            aria-describedby="comments-description"
+            name="comments"
+            type="checkbox"
+            className=""
+            onChange={(e) => {
+                if(e.target.checked) {
+                    addMarkedOrders(order.id)}
+
+                 else {
+                    removeMarkedOrders(order.id)
+                }}
+            }
+          />
+        </td>
+        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-3 ">
           {order.town}
         </td>
         <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
