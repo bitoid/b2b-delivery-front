@@ -2,7 +2,11 @@ import ClientOrder from "@/components/ClientOrder";
 import { cn } from "@/lib/utils";
 import { ClientOrderType } from "@/types/orders";
 import { Metadata } from "next";
+import { CheckIcon } from "@heroicons/react/24/outline";
+import MarkedOptions from "@/components/MarkedOptions";
 
+
+    
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
 };
@@ -10,6 +14,7 @@ export const metadata: Metadata = {
 export default async function OrdersPage() {
   const orders: ClientOrderType[] = await getOrders();
   const clientRows = [
+    <CheckIcon className="block w-6 h-6 ml-[-5px]"  />,
     "ქალაქი",
     "სახელი და გვარი",
     "ტელ. ნომერ",
@@ -19,12 +24,15 @@ export default async function OrdersPage() {
     "საკურიერო",
     "ჯამი",
   ];
+  
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto overflow-y-scroll sm:-mx-6 lg:-mx-8 custom-scroll max-h-[600px]">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+
+              <MarkedOptions/>
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
                   <tr>
