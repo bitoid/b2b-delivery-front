@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   Disclosure,
@@ -11,32 +11,51 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils";
-import { ClientOrderType } from "@/types/orders";
+import { useRouter } from "next/navigation";
+import queryString from "query-string";
+interface ClientOrderType {
+  firstName: string;
+  lastName: string;
+  address: string;
+  town: string;
+}
 
-export default function Filters({ orders }: { orders: ClientOrderType[] }) {
+export default function Filters({
+  orders,
+  searchParams,
+}: {
+  orders: ClientOrderType[];
+  searchParams: any;
+}) {
   const [open, setOpen] = useState(false);
 
-  const uniqueOrdersWithFullName = orders.filter((item, index, self) =>
-  index === self.findIndex((t) => t.firstName === item.firstName && t.lastName === item.lastName)
-);
+  const uniqueOrdersWithFullName = orders.filter(
+    (item, index, self) =>
+      index ===
+      self.findIndex(
+        (t) => t.firstName === item.firstName && t.lastName === item.lastName
+      )
+  );
 
-const uniqueOrdersWithAddress = orders.filter((item, index, self) =>
-  index === self.findIndex((t) => t.address === item.address)
-);
+  const uniqueOrdersWithAddress = orders.filter(
+    (item, index, self) =>
+      index === self.findIndex((t) => t.address === item.address)
+  );
 
-const uniqueOrdersWithTows= orders.filter((item, index, self) =>
-  index === self.findIndex((t) => t.town === item.town)
-);
-
+  const uniqueOrdersWithTows = orders.filter(
+    (item, index, self) => index === self.findIndex((t) => t.town === item.town)
+  );
 
   const sortOptions = [
-    { name: "ნივთის ღირებულება"},
-    { name: "საკურიერო"},
-    { name: "ჯამი"},
+    { name: "ნივთის ღირებულება" },
+    { name: "საკურიერო" },
+    { name: "ჯამი" },
+    { name: "თარიღი" },
   ];
+
   const filters = [
     {
-      id: "ქალაქი",
+      id: "town",
       name: "ქალაქი",
       options: uniqueOrdersWithTows.map((item) => {
         return {
@@ -46,17 +65,27 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
       }),
     },
     {
-      id: "სახელი და გვარი",
-      name: "სახელი და გვარი",
+      id: "firstName",
+      name: "სახელი",
       options: uniqueOrdersWithFullName.map((item) => {
         return {
-          value: item.firstName + " " + item.lastName,
-          label: item.firstName + " " + item.lastName,
+          value: item.firstName,
+          label: item.firstName,
         };
       }),
     },
     {
-      id: "მისამართი",
+      id: "lastName",
+      name: "გვარი",
+      options: uniqueOrdersWithFullName.map((item) => {
+        return {
+          value: item.lastName,
+          label: item.lastName,
+        };
+      }),
+    },
+    {
+      id: "address",
       name: "მისამართი",
       options: uniqueOrdersWithAddress.map((item) => {
         return {
@@ -65,8 +94,64 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
         };
       }),
     },
-    
   ];
+
+  const [selectedFilters, setSelectedFilters] =
+    useState<Record<string, string[]>>(searchParams);
+
+  const updateSelectedFilters = (
+    filterType: string,
+    value: string,
+    checked: boolean
+  ) => {
+    setSelectedFilters((prevFilters) => {
+      let clone = {};
+
+      if (Array.isArray(prevFilters[filterType])) {
+        clone = {
+          ...prevFilters,
+          [filterType]: checked
+            ? [...(prevFilters[filterType] || []), value]
+            : prevFilters[filterType].filter((val) => val !== value),
+        };
+      } else {
+        clone = {
+          ...prevFilters,
+          [filterType]: checked ? [value] : [],
+        };
+      }
+
+      return clone;
+    });
+  };
+
+  const generateQueryString = () => {
+    if (selectedFilters) return queryString.stringify(selectedFilters);
+
+    return queryString.stringify(searchParams);
+  };
+  const router = useRouter();
+
+  //change query
+  useEffect(() => {
+    localStorage.setItem("query", generateQueryString());
+    router.push(`/orders?${generateQueryString()}`);
+  }, [generateQueryString()]);
+
+  // save query after refresh
+  useEffect(() => {
+    let query = queryString.stringify(searchParams);
+    router.push(`/orders?${query}`);
+  }, []);
+
+  const handleCheckboxChange = (
+    filterType: string,
+    value: string,
+    checked: boolean
+  ) => {
+    updateSelectedFilters(filterType, value, checked);
+    generateQueryString();
+  };
 
   return (
     <div className="bg-gray-50">
@@ -150,7 +235,7 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
                                   />
                                   <label
                                     htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
-                                    className="ml-3 text-sm text-gray-500"
+                                    className="ml-3 text-sm text-gray-500 "
                                   >
                                     {option.label}
                                   </label>
@@ -200,18 +285,39 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
                 leaveTo="transform opacity-0 scale-95"
               >
                 <Menu.Items className="absolute left-0 z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="py-1">
+                  <div className="py-1 px-2 ">
                     {sortOptions.map((option, index) => (
                       <Menu.Item key={index}>
                         {({ active }) => (
-                          <span
-                            className={cn(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm font-medium text-gray-900"
-                            )}
-                          >
-                            {option.name}
-                          </span>
+                          <div key={index} className="flex items-center">
+                            <input
+                              id={`sort-${option.name}}`}
+                              name={`${option.name}[]`}
+                              defaultValue={option.name}
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              onChange={(e) =>
+                                handleCheckboxChange(
+                                  "sort",
+                                  option.name,
+                                  e.target.checked
+                                )
+                              }
+                              checked={
+                                Object.keys(searchParams).indexOf("sort") !=
+                                  -1 &&
+                                (searchParams[option.name] == "sort" ||
+                                  searchParams["sort"].indexOf(option.name) !=
+                                    -1)
+                              }
+                            />
+                            <label
+                              htmlFor={`sort-${option.name}}`}
+                              className="ml-3 text-sm text-gray-500 "
+                            >
+                              {option.name}
+                            </label>
+                          </div>
                         )}
                       </Menu.Item>
                     ))}
@@ -239,11 +345,7 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
                   <div>
                     <Popover.Button className="group inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
                       <span>{section.name}</span>
-                      {sectionIdx === 0 ? (
-                        <span className="ml-1.5 rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-gray-700">
-                          1
-                        </span>
-                      ) : null}
+
                       <ChevronDownIcon
                         className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
                         aria-hidden="true"
@@ -270,6 +372,21 @@ const uniqueOrdersWithTows= orders.filter((item, index, self) =>
                               defaultValue={option.value}
                               type="checkbox"
                               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              onChange={(e) =>
+                                handleCheckboxChange(
+                                  section.id,
+                                  option.value,
+                                  e.target.checked
+                                )
+                              }
+                              checked={
+                                Object.keys(searchParams).indexOf(section.id) !=
+                                  -1 &&
+                                (searchParams[section.id] == option.value ||
+                                  searchParams[section.id].indexOf(
+                                    option.value
+                                  ) != -1)
+                              }
                             />
                             <label
                               htmlFor={`filter-${section.id}-${optionIdx}`}
