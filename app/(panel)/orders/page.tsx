@@ -1,9 +1,11 @@
+
 import ClientOrder from "@/components/ClientOrder";
 import { cn } from "@/lib/utils";
 import { ClientOrderType } from "@/types/orders";
 import { Metadata } from "next";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import MarkedOptions from "@/components/MarkedOptions";
+import Filters from "@/components/Filters";
 
 
     
@@ -28,6 +30,7 @@ export default async function OrdersPage() {
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8">
+        {orders && <Filters orders={orders}/>}
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto overflow-y-scroll sm:-mx-6 lg:-mx-8 custom-scroll max-h-[600px]">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -66,7 +69,7 @@ export default async function OrdersPage() {
 
 const getOrders = async () => {
   try {
-    let response = await fetch(`http://localhost:4000/orders`, {
+    let response = await fetch(`http://localhost:4000/orders?town=თბილისი`, {
       cache: "no-store",
     });
     let orders = await response.json();

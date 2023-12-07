@@ -14,7 +14,7 @@ export default function ManuallyForm() {
             phone: "579-09-55-87",
             address: "გურამიშვილის 9",
             comment: `ბლა ბლა ბლა ბლა`,
-            price: 200,
+            price: 190,
             courierPrice: 10,
           }),
         });
