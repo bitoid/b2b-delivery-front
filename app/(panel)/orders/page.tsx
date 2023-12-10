@@ -4,17 +4,27 @@ import { ClientOrderType } from "@/types/orders";
 import { Metadata } from "next";
 import { CheckIcon } from "@heroicons/react/24/outline";
 import MarkedOptions from "@/components/MarkedOptions";
+import Filters from "@/components/Filters";
+import queryString from "query-string";
 
-
-    
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
 };
 
-export default async function OrdersPage() {
+interface ParamsType {
+  town: string;
+  comment: string;
+}
+
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: ParamsType;
+}) {
+  const filteredOrders: ClientOrderType[] = await getFilteredOrders(searchParams);
   const orders: ClientOrderType[] = await getOrders();
   const clientRows = [
-    <CheckIcon className="block w-6 h-6 ml-[-5px]"  />,
+    <CheckIcon className="block w-6 h-6 ml-[-5px]" />,
     "ქალაქი",
     "სახელი და გვარი",
     "ტელ. ნომერ",
@@ -24,15 +34,15 @@ export default async function OrdersPage() {
     "საკურიერო",
     "ჯამი",
   ];
-  
+
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8">
+        {orders && <Filters orders={orders} searchParams={searchParams}/>}
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto overflow-y-scroll sm:-mx-6 lg:-mx-8 custom-scroll max-h-[600px]">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-
-              <MarkedOptions/>
+              <MarkedOptions />
               <table className="min-w-full divide-y divide-gray-300">
                 <thead>
                   <tr>
@@ -51,7 +61,7 @@ export default async function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {orders.map((order) => (
+                  {filteredOrders?.map((order) => (
                     <ClientOrder order={order} key={order.id} />
                   ))}
                 </tbody>
@@ -64,11 +74,24 @@ export default async function OrdersPage() {
   );
 }
 
-const getOrders = async () => {
+const getFilteredOrders = async (searchParams: ParamsType) => {
+  const query = queryString.stringify(searchParams);
+  console.log(query)
   try {
-    let response = await fetch(`http://localhost:4000/orders`, {
+    let response = await fetch(`http://localhost:4000/orders?${query}`, {
       cache: "no-store",
     });
+    let orders = await response.json();
+    return orders;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const getOrders = async () => {
+ 
+  try {
+    let response = await fetch(`http://localhost:4000/orders`);
     let orders = await response.json();
     return orders;
   } catch (err) {
