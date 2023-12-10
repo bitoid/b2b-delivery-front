@@ -14,8 +14,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import queryString from "query-string";
 interface ClientOrderType {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   address: string;
   town: string;
 }
@@ -33,7 +32,7 @@ export default function Filters({
     (item, index, self) =>
       index ===
       self.findIndex(
-        (t) => t.firstName === item.firstName && t.lastName === item.lastName
+        (t) => t.fullName === item.fullName
       )
   );
 
@@ -65,22 +64,12 @@ export default function Filters({
       }),
     },
     {
-      id: "firstName",
-      name: "სახელი",
+      id: "fullName",
+      name: "სახელი და გვარი",
       options: uniqueOrdersWithFullName.map((item) => {
         return {
-          value: item.firstName,
-          label: item.firstName,
-        };
-      }),
-    },
-    {
-      id: "lastName",
-      name: "გვარი",
-      options: uniqueOrdersWithFullName.map((item) => {
-        return {
-          value: item.lastName,
-          label: item.lastName,
+          value: item.fullName,
+          label: item.fullName,
         };
       }),
     },

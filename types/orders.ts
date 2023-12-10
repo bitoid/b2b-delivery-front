@@ -1,8 +1,7 @@
 interface ClientOrderType {
   id: number;
   town: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phone: string;
   address: string;
   comment: string;

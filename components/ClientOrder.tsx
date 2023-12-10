@@ -20,6 +20,7 @@ export default function ClientOrder({ order }: { order: ClientOrderType }) {
             name="comments"
             type="checkbox"
             className=""
+            checked={markedOrders.indexOf(order.id) != -1}
             onChange={(e) => {
                 if(e.target.checked) {
                     addMarkedOrders(order.id)}
@@ -34,7 +35,7 @@ export default function ClientOrder({ order }: { order: ClientOrderType }) {
           {order.town}
         </td>
         <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-          {order.firstName} {order.lastName}
+          {order.fullName}
         </td>
         <td className="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
           {order.phone}

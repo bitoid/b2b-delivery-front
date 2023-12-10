@@ -61,7 +61,7 @@ export default async function OrdersPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {filteredOrders.map((order) => (
+                  {filteredOrders?.map((order) => (
                     <ClientOrder order={order} key={order.id} />
                   ))}
                 </tbody>
@@ -91,9 +91,7 @@ const getFilteredOrders = async (searchParams: ParamsType) => {
 const getOrders = async () => {
  
   try {
-    let response = await fetch(`http://localhost:4000/orders`, {
-      cache: "no-store",
-    });
+    let response = await fetch(`http://localhost:4000/orders`);
     let orders = await response.json();
     return orders;
   } catch (err) {
