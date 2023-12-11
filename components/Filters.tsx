@@ -13,6 +13,9 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import queryString from "query-string";
+import { Select } from "antd";
+import { json } from "node:stream/consumers";
+import MarkedOptions from "./MarkedOptions";
 interface ClientOrderType {
   fullName: string;
   address: string;
@@ -30,10 +33,7 @@ export default function Filters({
 
   const uniqueOrdersWithFullName = orders.filter(
     (item, index, self) =>
-      index ===
-      self.findIndex(
-        (t) => t.fullName === item.fullName
-      )
+      index === self.findIndex((t) => t.fullName === item.fullName)
   );
 
   const uniqueOrdersWithAddress = orders.filter(
@@ -73,6 +73,7 @@ export default function Filters({
         };
       }),
     },
+
     {
       id: "address",
       name: "მისამართი",
@@ -123,7 +124,6 @@ export default function Filters({
 
   //change query
   useEffect(() => {
-    localStorage.setItem("query", generateQueryString());
     router.push(`/orders?${generateQueryString()}`);
   }, [generateQueryString()]);
 
@@ -142,10 +142,200 @@ export default function Filters({
     generateQueryString();
   };
 
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value: string) => {
+    console.log("search:", value);
+  };
+
+  // Filter `option.label` match the user type `input`
+  const filterOption = (
+    input: string,
+    option?: { label: string; value: string }
+  ) => (option?.value ?? "").toLowerCase().includes(input.toLowerCase());
+
+  const [sortPopoverOpen, setSortPopoverOpen] = useState(false);
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false);
   return (
-    <div className="bg-gray-50">
+    <>
+      <Popover className="relative isolate z-[5] shadow block">
+        <div className="bg-white py-5">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-wrap gap-12">
+            <div className=" flex flex-wrap gap-5">
+            <Popover.Button
+              className="inline-flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900"
+              onClick={() => {
+                setFilterPopoverOpen(!filterPopoverOpen);
+                setSortPopoverOpen(false);
+              }}
+            >
+              ფილტრაცია
+              <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+            </Popover.Button>
+            <Popover.Button
+              className="inline-flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 outline-none"
+              onClick={() => {
+                setSortPopoverOpen(!sortPopoverOpen);
+                setFilterPopoverOpen(false);
+              }}
+            >
+              სორტირება
+              <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+            </Popover.Button>
+            </div>
+            <MarkedOptions />
+
+            <button
+              type="button"
+              className="rounded bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-600 shadow-sm hover:bg-indigo-100 ml-auto"
+              onClick={() => {
+                router.push(`/orders`);
+                setSortPopoverOpen(false);
+                setFilterPopoverOpen(false);
+              }}
+            >
+              გასუფთავება
+            </button>
+          </div>
+        </div>
+
+        <Transition
+          as={Fragment}
+          show={filterPopoverOpen}
+          enter="transition ease-out duration-200"
+          enterFrom="opacity-0 -translate-y-1"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-1"
+        >
+          <Popover.Panel className="absolute inset-x-0 top-0 -z-10 bg-white pt-16 shadow-lg ring-1 ring-gray-900/5">
+            <div className="mx-auto  max-w-7xl px-6 py-5 lg:px-8">
+              <Popover.Group className="flex flex-wrap justify-start  gap-10 sm:items-baseline sm:space-x-8 w-full ">
+                {filters.map((section, sectionIdx) => (
+                  <Popover
+                    as="div"
+                    key={section.name}
+                    id={`desktop-menu-${sectionIdx}`}
+                    className="relative inline-block text-left"
+                    style={{ margin: 0 }}
+                  >
+                    <form className="space-y-4" id="for-hide">
+                      <Select
+                        className="w-[150px]"
+                        showSearch
+                        placeholder={section.name}
+                        optionFilterProp="children"
+                        onChange={onChange}
+                        onSearch={onSearch}
+                        filterOption={filterOption}
+                        value={null}
+                        options={section.options.map((option, optionIdx) => ({
+                          value: option.value,
+
+                          label: (
+                            <div
+                              key={option.value}
+                              className="flex items-center overflow-x-auto custom-scroll w-[150px]"
+                            >
+                              <input
+                                id={`filter-${section.id}-${optionIdx}`}
+                                name={`${section.id}[]`}
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                onChange={(e) =>
+                                  handleCheckboxChange(
+                                    section.id,
+                                    option.value,
+                                    e.target.checked
+                                  )
+                                }
+                                checked={
+                                  Object.keys(searchParams).indexOf(
+                                    section.id
+                                  ) != -1 &&
+                                  (searchParams[section.id] == option.value ||
+                                    searchParams[section.id].indexOf(
+                                      option.value
+                                    ) != -1)
+                                }
+                              />
+                              <label
+                                htmlFor={`filter-${section.id}-${optionIdx}`}
+                                className="ml-3 whitespace-nowrap pr-6 text-sm font-medium text-gray-900"
+                              >
+                                {option.label}
+                              </label>
+                            </div>
+                          ),
+                        }))}
+                      />
+                    </form>
+                  </Popover>
+                ))}
+              </Popover.Group>
+            </div>
+          </Popover.Panel>
+        </Transition>
+
+        <Transition
+          as={Fragment}
+          show={sortPopoverOpen}
+          enter="transition ease-out duration-200"
+          enterFrom="opacity-0 -translate-y-1"
+          enterTo="opacity-100 translate-y-0"
+          leave="transition ease-in duration-150"
+          leaveFrom="opacity-100 translate-y-0"
+          leaveTo="opacity-0 -translate-y-1"
+        >
+          <Popover.Panel className="absolute inset-x-0 top-0 -z-10 bg-white pt-16 shadow-lg ring-1 ring-gray-900/5">
+            <div className="mx-auto  max-w-7xl px-6 py-5 lg:px-8">
+              <Menu as="div" className="relative inline-block text-left">
+                <div className="py-1 px-2 ">
+                  {sortOptions.map((option, index) => (
+                    <Menu.Item key={index}>
+                      {({ active }) => (
+                        <div key={index} className="flex items-center">
+                          <input
+                            id={`sort-${option.name}}`}
+                            name={`${option.name}[]`}
+                            defaultValue={option.name}
+                            type="checkbox"
+                            className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            onChange={(e) =>
+                              handleCheckboxChange(
+                                "sort",
+                                option.name,
+                                e.target.checked
+                              )
+                            }
+                            checked={
+                              Object.keys(searchParams).indexOf("sort") != -1 &&
+                              (searchParams[option.name] == "sort" ||
+                                searchParams["sort"].indexOf(option.name) != -1)
+                            }
+                          />
+                          <label
+                            htmlFor={`sort-${option.name}}`}
+                            className="ml-3 text-sm text-gray-500 "
+                          >
+                            {option.name}
+                          </label>
+                        </div>
+                      )}
+                    </Menu.Item>
+                  ))}
+                </div>
+              </Menu>
+            </div>
+          </Popover.Panel>
+        </Transition>
+      </Popover>
+
       {/* Mobile filter dialog */}
-      <Transition.Root show={open} as={Fragment}>
+      {/* <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 sm:hidden" onClose={setOpen}>
           <Transition.Child
             as={Fragment}
@@ -183,7 +373,7 @@ export default function Filters({
                 </div>
 
                 {/* Filters */}
-                <form className="mt-4">
+                {/* <form className="mt-4">
                   {filters.map((section) => (
                     <Disclosure
                       as="div"
@@ -241,9 +431,9 @@ export default function Filters({
             </Transition.Child>
           </div>
         </Dialog>
-      </Transition.Root>
+      </Transition.Root> */}
 
-      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:max-w-7xl lg:px-8">
+      {/* <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:max-w-7xl lg:px-8">
         <section
           aria-labelledby="filter-heading"
           className="border-t border-gray-200 py-6"
@@ -253,68 +443,6 @@ export default function Filters({
           </h2>
 
           <div className="flex items-center justify-between">
-            <Menu as="div" className="relative inline-block text-left">
-              <div>
-                <Menu.Button className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                  სორტირება
-                  <ChevronDownIcon
-                    className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                    aria-hidden="true"
-                  />
-                </Menu.Button>
-              </div>
-
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute left-0 z-10 mt-2 w-40 origin-top-left rounded-md bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="py-1 px-2 ">
-                    {sortOptions.map((option, index) => (
-                      <Menu.Item key={index}>
-                        {({ active }) => (
-                          <div key={index} className="flex items-center">
-                            <input
-                              id={`sort-${option.name}}`}
-                              name={`${option.name}[]`}
-                              defaultValue={option.name}
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                              onChange={(e) =>
-                                handleCheckboxChange(
-                                  "sort",
-                                  option.name,
-                                  e.target.checked
-                                )
-                              }
-                              checked={
-                                Object.keys(searchParams).indexOf("sort") !=
-                                  -1 &&
-                                (searchParams[option.name] == "sort" ||
-                                  searchParams["sort"].indexOf(option.name) !=
-                                    -1)
-                              }
-                            />
-                            <label
-                              htmlFor={`sort-${option.name}}`}
-                              className="ml-3 text-sm text-gray-500 "
-                            >
-                              {option.name}
-                            </label>
-                          </div>
-                        )}
-                      </Menu.Item>
-                    ))}
-                  </div>
-                </Menu.Items>
-              </Transition>
-            </Menu>
-
             <button
               type="button"
               className="inline-block text-sm font-medium text-gray-700 hover:text-gray-900 sm:hidden"
@@ -322,78 +450,9 @@ export default function Filters({
             >
               Filters
             </button>
-
-            <Popover.Group className="hidden sm:flex sm:items-baseline sm:space-x-8">
-              {filters.map((section, sectionIdx) => (
-                <Popover
-                  as="div"
-                  key={section.name}
-                  id={`desktop-menu-${sectionIdx}`}
-                  className="relative inline-block text-left"
-                >
-                  <div>
-                    <Popover.Button className="group inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                      <span>{section.name}</span>
-
-                      <ChevronDownIcon
-                        className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                        aria-hidden="true"
-                      />
-                    </Popover.Button>
-                  </div>
-
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                  >
-                    <Popover.Panel className="absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white p-4 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <form className="space-y-4">
-                        {section.options.map((option, optionIdx) => (
-                          <div key={option.value} className="flex items-center">
-                            <input
-                              id={`filter-${section.id}-${optionIdx}`}
-                              name={`${section.id}[]`}
-                              defaultValue={option.value}
-                              type="checkbox"
-                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                              onChange={(e) =>
-                                handleCheckboxChange(
-                                  section.id,
-                                  option.value,
-                                  e.target.checked
-                                )
-                              }
-                              checked={
-                                Object.keys(searchParams).indexOf(section.id) !=
-                                  -1 &&
-                                (searchParams[section.id] == option.value ||
-                                  searchParams[section.id].indexOf(
-                                    option.value
-                                  ) != -1)
-                              }
-                            />
-                            <label
-                              htmlFor={`filter-${section.id}-${optionIdx}`}
-                              className="ml-3 whitespace-nowrap pr-6 text-sm font-medium text-gray-900"
-                            >
-                              {option.label}
-                            </label>
-                          </div>
-                        ))}
-                      </form>
-                    </Popover.Panel>
-                  </Transition>
-                </Popover>
-              ))}
-            </Popover.Group>
           </div>
         </section>
-      </div>
-    </div>
+      </div> */}
+    </>
   );
 }

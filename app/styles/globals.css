@@ -37,3 +37,13 @@ select {
   filter: invert(98%) sepia(21%) saturate(173%) hue-rotate(254deg)
     brightness(115%) contrast(100%);
 }
+
+#for-hide .ant-select-selection-item {
+  background-color: transparent;
+
+  
+}
+
+#for-hide .ant-select-selection-item svg {
+  display: none;
+}

@@ -6,6 +6,7 @@ import EditOrder from "./EditOrder";
 import BlackScreen from "./BlackScreen";
 import { useMarkedOrderStore } from "@/store/orders";
 import { cn } from "@/lib/utils";
+import { PencilIcon } from "@heroicons/react/24/outline";
 export default function ClientOrder({ order }: { order: ClientOrderType }) {
   const [isDetails, setIsDetails] = useState(false);
   const [isComment, setIsComment] = useState(false);
@@ -44,7 +45,7 @@ export default function ClientOrder({ order }: { order: ClientOrderType }) {
           {order.address}
         </td>
         <td
-          className=" px-3 py-5 text-sm text-gray-500 cursor-pointer min-w-[120px] relative"
+          className=" px-3 py-5 text-sm text-gray-500 cursor-pointer min-w-[120px] relative z-[0]"
           onMouseOver={() => setIsComment(true)}
           onTouchStart={() => setIsComment(true)}
           onMouseLeave={() => setIsComment(false)}
@@ -74,10 +75,10 @@ export default function ClientOrder({ order }: { order: ClientOrderType }) {
         </td>
 
         <td
-          className=" w-[50px] whitespace-nowrap py-5 text-right text-sm font-semibold sm:pr-0 text-indigo-700 hover:text-indigo-900 hover:cursor-pointer hover:underline"
+          className=" w-[5px] whitespace-nowrap py-5 text-right text-sm font-semibold sm:pr-0 text-indigo-700 hover:text-indigo-900 hover:cursor-pointer hover:underline"
           onClick={() => setIsDetails(true)}
         >
-          განახლება
+          <PencilIcon className="w-5 h-5"/>
         </td>
       </tr>
       {isDetails && (

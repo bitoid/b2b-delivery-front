@@ -24,7 +24,7 @@ export default async function OrdersPage({
   const filteredOrders: ClientOrderType[] = await getFilteredOrders(searchParams);
   const orders: ClientOrderType[] = await getOrders();
   const clientRows = [
-    <CheckIcon className="block w-6 h-6 ml-[-5px]" />,
+    <CheckIcon className="block w-6 h-6 ml-[-5px]" key={Math.random()}/>,
     "ქალაქი",
     "სახელი და გვარი",
     "ტელ. ნომერ",
@@ -33,18 +33,18 @@ export default async function OrdersPage({
     "ნივთის ღირებულება",
     "საკურიერო",
     "ჯამი",
+    ""
   ];
 
   return (
     <>
       <div className="px-4 sm:px-6 lg:px-8">
         {orders && <Filters orders={orders} searchParams={searchParams}/>}
-        <div className="mt-8 flow-root">
+        <div className="flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto overflow-y-scroll sm:-mx-6 lg:-mx-8 custom-scroll max-h-[600px]">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <MarkedOptions />
               <table className="min-w-full divide-y divide-gray-300">
-                <thead>
+                <thead className="sticky top-2   z-[2] bg-white box-content  ">
                   <tr>
                     {clientRows.map((item, index) => (
                       <th
