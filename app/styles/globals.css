@@ -47,3 +47,31 @@ select {
 #for-hide .ant-select-selection-item svg {
   display: none;
 }
+
+.ant-btn-sm {
+  background-color: white;
+  color: gray
+}
+
+
+
+.ant-table-body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+.ant-table-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 20%;
+}
+
+/* Handle */
+.ant-table-body::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+.ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
