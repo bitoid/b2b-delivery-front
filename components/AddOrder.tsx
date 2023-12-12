@@ -22,7 +22,7 @@ export default function AddOrder() {
           )}
           onClick={() => setManually(true)}
         >
-          ფორმით
+          ფორმით 
         </button>
         <button
           type="button"
