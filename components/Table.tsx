@@ -69,8 +69,8 @@ const OrderTable: React.FC<{
       dataIndex: "town",
       filters: getUniques(data, "town"),
       filterMode: "tree",
-      filterSearch: true,
-
+      filterSearch: (value) => {console.log(value); return true},
+        
       defaultFilteredValue: searchParams.town
         ? typeof searchParams.town == "object"
           ? [...searchParams.town]
@@ -85,6 +85,7 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "fullName"),
       filterMode: "tree",
       filterSearch: true,
+      
       defaultFilteredValue: searchParams.fullName
         ? typeof searchParams.fullName == "object"
           ? [...searchParams.fullName]
