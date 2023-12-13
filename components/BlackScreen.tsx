@@ -24,7 +24,7 @@ export default function BlackScreen({
   return (
     <div
       onClick={() => setIsBlackScreen(false)}
-      className="w-[100vw] h-[100vh] fixed bg-black top-0 z-5 left-0 opacity-60 overflow-hidden"
+      className="w-[100vw] h-[100vh] fixed bg-black top-0 z-10 left-0 opacity-60 overflow-hidden"
     ></div>
   );
 }

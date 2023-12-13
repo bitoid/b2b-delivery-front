@@ -3,7 +3,7 @@ import React from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 export default function EditOrder({ order }: { order: ClientOrderType }) {
   return (
-    <div className=" fixed z-10 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[800px] rounded-[10px]">
+    <div className=" fixed z-20 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[800px] rounded-[10px]">
       <div className=" px-4 sm:px-0 flex justify-between">
         <h3 className="text-base font-semibold leading-7 text-gray-900">
           შეკვეთის დეტალები
@@ -21,26 +21,16 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
           <div className="max-h-[70vh] overflow-y-auto border-y border-gray-200 custom-scroll">
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">
-                სახელი
+                სახელი და გვარი
               </dt>
               <dd className="mt-1 flex text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
                 <input
-                  defaultValue={order.firstName}
+                  defaultValue={order.fullName}
                   className="block w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               </dd>
             </div>
-            <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-              <dt className="text-sm font-medium leading-6 text-gray-900">
-                გვარი
-              </dt>
-              <dd className="mt-1 flex text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
-                <input
-                  defaultValue={order.lastName}
-                  className="block w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </dd>
-            </div>
+           
             <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">
                 ქალაქი
