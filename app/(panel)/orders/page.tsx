@@ -30,7 +30,6 @@ export default async function OrdersPage({
 
 const getFilteredOrders = async (searchParams: ParamsType) => {
   const query = queryString.stringify(searchParams);
-  console.log(query)
   try {
     let response = await fetch(`http://localhost:4000/orders?${query}`, {
       cache: "no-store",

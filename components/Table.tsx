@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button, Table } from "antd";
+import { Button, ConfigProvider, Input, Space, Spin, Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
 import { getUniques } from "@/lib/utils";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
-import { useParams, useServerInsertedHTML } from "next/navigation";
+import { useServerInsertedHTML } from "next/navigation";
 import queryString from "query-string";
 import { SortOrder, TableRowSelection } from "antd/es/table/interface";
 import { useRouter } from "next/navigation";
@@ -23,10 +23,10 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
 
   return (
     <span
-      className=" px-3 py-5 text-sm text-gray-500 cursor-pointer min-w-[120px] relative"
+      className=" px-3 text-sm text-gray-500 cursor-pointer min-w-[120px] relative"
       onMouseOver={() => setIsComment(true)}
       onTouchStart={() => setIsComment(true)}
-      onMouseLeave={() => setIsComment(false)}
+      onMouseOut={() => setIsComment(false)}
     >
       {isComment && text ? (
         <span className="bg-white absolute break-words w-[350px] p-2 rounded-[5px] z-10 shadow-2xl">
@@ -47,7 +47,8 @@ const OrderTable: React.FC<{
   const cache = React.useMemo<Entity>(() => createCache(), []);
   const isServerInserted = React.useRef<boolean>(false);
   const router = useRouter();
-
+  let storedQuery =
+    typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
   //improve performance
   useServerInsertedHTML(() => {
     // avoid duplicate css insert
@@ -63,19 +64,61 @@ const OrderTable: React.FC<{
     );
   });
 
+  const getDefaultFilter = (storedQuery: string | null, key: string) => {
+    const keyQuery = storedQuery
+      ? queryString.parse(storedQuery, { arrayFormat: "comma" })[key]
+      : null;
+    const parsedKeyQuery = Array.isArray(keyQuery)
+      ? keyQuery
+      : keyQuery
+      ? [keyQuery]
+      : null;
+
+    const defaultFilter =
+      parsedKeyQuery && parsedKeyQuery.length > 0 ? parsedKeyQuery : null;
+
+    return defaultFilter as any;
+  };
+
+  const [query, setQuery] = useState(
+    storedQuery
+      ? queryString.parse(storedQuery, { arrayFormat: "comma" })
+      : searchParams
+  );
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    storedQuery = localStorage.getItem("query");
+    if (query["price"]?.split("to")[0])
+      setMinPrice(query["price"]?.split("to")[0]);
+
+    if (query["price"]?.split("to")[1])
+      setMaxPrice(query["price"]?.split("to")[1]);
+
+    if (!searchParams["current"]) {
+      router.push("?current=1&pageSize=10");
+    }
+    if (storedQuery) {
+      router.push(`/orders?${storedQuery}`);
+      setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
+    }
+  }, []);
+  const [minPrice, setMinPrice] = useState<number | undefined>(
+    searchParams["price"]?.split("to")[0]
+  );
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(
+    searchParams["price"]?.split("to")[1]
+  );
   const columns: ColumnsType<ClientOrderType> = [
     {
       title: "ქალაქი",
       dataIndex: "town",
       filters: getUniques(data, "town"),
       filterMode: "tree",
-      filterSearch: (value) => {console.log(value); return true},
-        
-      defaultFilteredValue: searchParams.town
-        ? typeof searchParams.town == "object"
-          ? [...searchParams.town]
-          : [searchParams.town]
-        : null,
+      filterSearch: true,
+
+      defaultFilteredValue: getDefaultFilter(storedQuery, "town"),
       onFilter: (value, record) => record.town.includes(value as string),
       width: "15%",
     },
@@ -85,26 +128,18 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "fullName"),
       filterMode: "tree",
       filterSearch: true,
-      
-      defaultFilteredValue: searchParams.fullName
-        ? typeof searchParams.fullName == "object"
-          ? [...searchParams.fullName]
-          : [searchParams.fullName]
-        : null,
-      onFilter: (value, record) => record.fullName.includes(value as string),
-      width: "15%",
+
+      defaultFilteredValue: getDefaultFilter(storedQuery, "fullName"),
+      onFilter: (value, record) => record.fullName == (value as string),
+      width: "17%",
     },
     {
       title: "მისამართი",
       dataIndex: "address",
       filters: getUniques(data, "address"),
-      filterMode: "menu",
+      filterMode: "tree",
       filterSearch: true,
-      defaultFilteredValue: searchParams.address
-        ? typeof searchParams.address == "object"
-          ? [...searchParams.address]
-          : [searchParams.address]
-        : null,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
       onFilter: (value, record) => record.address.includes(value as string),
       width: "15%",
     },
@@ -114,11 +149,7 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "phone"),
       filterMode: "tree",
       filterSearch: true,
-      defaultFilteredValue: searchParams.phone
-        ? typeof searchParams.phone == "object"
-          ? [...searchParams.phone]
-          : [searchParams.phone]
-        : null,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "phone"),
       onFilter: (value, record) => record.phone.includes(value as string),
       width: "15%",
     },
@@ -126,7 +157,7 @@ const OrderTable: React.FC<{
     {
       title: "კომენტარი",
       dataIndex: "comment",
-      width: "15%",
+      width: "16%",
       render: (text: string) => <Comment text={text} />,
     },
     {
@@ -134,27 +165,105 @@ const OrderTable: React.FC<{
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
       defaultSortOrder:
-        searchParams.field == "price" ? searchParams.order : null,
-      defaultFilteredValue: searchParams.price
-        ? typeof searchParams.price == "object"
-          ? [...searchParams.price]
-          : [searchParams.price]
-        : null,
+        storedQuery &&
+        queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
+          "price"
+          ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
+              .order as SortOrder)
+          : undefined,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "price"),
       width: "10%",
-      filters: [
-        { text: "0-100", value: "0-100" },
-        { text: "101-200", value: "101-200" },
-        // Add more ranges as needed...
-      ],
+
+      filterDropdown: ({ setSelectedKeys, confirm }) => {
+        return (
+          <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+            <Input
+              placeholder={"დან"}
+              value={minPrice}
+              type="number"
+              onChange={(e) => {
+                if (e.target.value == "") {
+                  setMinPrice(undefined);
+                } else {
+                  setMinPrice(Number(e.target.value));
+                }
+              }}
+              style={{ marginBottom: 8, display: "block" }}
+            />
+            <Input
+              placeholder={"მდე"}
+              value={maxPrice}
+              type="number"
+              onChange={(e) => {
+                if (e.target.value == "") {
+                  setMaxPrice(undefined);
+                } else {
+                  setMaxPrice(Number(e.target.value));
+                }
+              }}
+              style={{ marginBottom: 8, display: "block" }}
+            />
+            <Space>
+              <Button
+                type="link"
+                onClick={() => {
+                  setSelectedKeys([]);
+                  confirm();
+                  setMinPrice(undefined);
+                  setMaxPrice(undefined);
+                }}
+                size="small"
+                style={{ width: 90 }}
+                disabled={minPrice == undefined && maxPrice == undefined}
+              >
+                Reset
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (minPrice && maxPrice) {
+                    setSelectedKeys([minPrice as number, maxPrice as number]);
+                  } else {
+                    setSelectedKeys([]);
+                  }
+
+                  confirm();
+                }}
+                size="small"
+                style={{ width: 90 }}
+              >
+                OK
+              </Button>
+            </Space>
+          </div>
+        );
+      },
       onFilter: (value, record) => {
-        const [min, max] = value.toString().split("-").map(Number);
-        return record.price >= min && record.price <= max;
+        const price = record.price as number;
+        if (
+          searchParams["price"]?.split("to")[0] &&
+          searchParams["price"]?.split("to")[1]
+        ) {
+          return (
+            price >= searchParams["price"]?.split("to")[0] &&
+            price <= searchParams["price"]?.split("to")[1]
+          );
+        }
+
+        return true;
       },
     },
     {
       title: "საკურიერო",
       dataIndex: "courierPrice",
       sorter: (a, b) => a.price - b.price,
+      defaultSortOrder:
+        storedQuery &&
+        queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
+          "courierPrice"
+          ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
+              .order as SortOrder)
+          : undefined,
       width: "15%",
     },
 
@@ -187,18 +296,16 @@ const OrderTable: React.FC<{
     sorter,
     extra
   ) => {
-    console.log("params", pagination, filters, sorter, extra);
+    // s", pagination, filters, sorter, extra);
 
     const filteredSorter: Record<string, SortOrder | undefined> = {};
     const filteredFilters: Record<string, (string | number | boolean)[]> = {};
-
     // Filtering out null values from sorter
     Object.keys(sorter).forEach((key) => {
       if (sorter[key as keyof typeof sorter] !== null) {
         filteredSorter[key] = sorter[key as keyof typeof sorter];
       }
     });
-
     // Filtering out null values from filters
     Object.keys(filters).forEach((key) => {
       if (filters[key as keyof typeof filters] !== null) {
@@ -209,44 +316,47 @@ const OrderTable: React.FC<{
         )[];
       }
     });
-
     const query: any = {
       ...pagination,
       ...filteredSorter,
       ...filteredFilters,
     };
-
     if (query.hasOwnProperty("column")) {
       delete query["column"];
     }
     if (!query["order"]) {
       delete query["field"];
     }
-    console.log(query);
-    localStorage.setItem("query", queryString.stringify(query));
-    router.push("orders?" + queryString.stringify(query));
+    if (query["price"]) {
+      if (query["price"].length == 2) {
+        query["price"] = `${query["price"][0]}to${query["price"][1]}`;
+      } else {
+        query["price"] = `${query["price"][0].split("to")[0]}to${
+          query["price"][0].split("to")[1]
+        }`;
+      }
+    }
+
+    localStorage.setItem(
+      "query",
+      queryString.stringify(query, {
+        arrayFormat: "comma",
+      })
+    );
+    router.push(
+      "orders?" +
+        queryString.stringify(query, {
+          arrayFormat: "comma",
+        })
+    );
   };
-
-//   useEffect(() => {
-//     let query = localStorage.getItem("query");
-//     if (query) {
-//       router.push(`/orders?${query}`);
-//       searchParams=queryString.parse(query)
-//     } else {
-//       router.push(`/orders?current=1$pageSize=10`);
-//     }
-//   }, []);
-
-
 
   //selection
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (selectedRowIds: React.Key[]) => {
-    console.log("Selected Row Keys:", selectedRowIds); // This will contain the 'id's of the selected rows
     setSelectedRowKeys(selectedRowIds);
   };
-
   const rowSelection: TableRowSelection<ClientOrderType> = {
     selectedRowKeys,
     onChange: onSelectChange,
@@ -263,24 +373,30 @@ const OrderTable: React.FC<{
         key: "send",
         text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
         onSelect: () => {
-          console.log(selectedRowKeys);
+          // edRowKeys);
         },
       },
     ],
   };
 
-  return (
+  const parsedCurrent =
+    storedQuery &&
+    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
+  const defaultCurrent =
+    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
+
+  return isClient ? (
     <StyleProvider cache={cache}>
       <Table
         columns={columns}
         dataSource={data}
         onChange={onChange}
-        scroll={{ y: 600, x: 1000 }}
+        scroll={{ y: "50vh", x: 1150 }}
         className="custom-scroll "
         sticky={true}
         rowSelection={rowSelection}
         rowKey={(record: ClientOrderType) => record.id}
-        pagination={{ pageSize: 10 }}
+        pagination={{ pageSize: 10, current: defaultCurrent }}
       />
       {isEdit && editInfo && (
         <>
@@ -289,6 +405,21 @@ const OrderTable: React.FC<{
         </>
       )}
     </StyleProvider>
+  ) : (
+  //   <ConfigProvider
+  //   theme={{
+  //     components: {
+  //       Spin: {
+  //        dotSize: 100,
+  //        colorPrimary: "#1677ff",
+  //        colorBgContainer: "black"
+  //       },
+  //     },
+  //   }}
+  // >
+  //   <Spin className="block m-auto"/>
+  // </ConfigProvider>
+  null
   );
 };
 

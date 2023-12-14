@@ -13,7 +13,7 @@ export default function BlackScreen({
   useEffect(() => {
     if (body)
       if (isBlackScreen) {
-        body.style.overflow = "hidden";
+        body.style.overflow = "auto";
       }
 
     return () => {
