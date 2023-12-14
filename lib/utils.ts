@@ -19,12 +19,18 @@ export function getUniques(data: ClientOrderType[], fieldName: string) {
       return { text: item[fieldName], value: item[fieldName] };
     });
 }
-
-export function getDefaultFilter(storedQuery: string | null, key: string): string[] | undefined {
-  const keyQuery = storedQuery ? queryString.parse(storedQuery)[key] : null;
+export function getDefaultFilter(storedQuery: string | null, key: string) {
+  const keyQuery = storedQuery
+    ? queryString.parse(storedQuery, { arrayFormat: "comma" })[key]
+    : null;
   const parsedKeyQuery = Array.isArray(keyQuery)
-    ? keyQuery.filter((value: string | null): value is string => value !== null)
-    : keyQuery !== null ? [keyQuery] : null;
+    ? keyQuery
+    : keyQuery
+    ? [keyQuery]
+    : null;
 
-  return parsedKeyQuery && parsedKeyQuery.length > 0 ? parsedKeyQuery : undefined;
+  const defaultFilter =
+    parsedKeyQuery && parsedKeyQuery.length > 0 ? parsedKeyQuery : null;
+
+  return defaultFilter as any;
 }

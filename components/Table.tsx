@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Button, ConfigProvider, Input, Space, Spin, Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
-import { getUniques } from "@/lib/utils";
+import { getUniques, getDefaultFilter } from "@/lib/utils";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
 import { useServerInsertedHTML } from "next/navigation";
@@ -44,12 +44,36 @@ const OrderTable: React.FC<{
   searchParams: any;
   filteredData: ClientOrderType[];
 }> = ({ data, searchParams, filteredData }) => {
-  const cache = React.useMemo<Entity>(() => createCache(), []);
-  const isServerInserted = React.useRef<boolean>(false);
-  const router = useRouter();
   let storedQuery =
     typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
-  //improve performance
+
+  const [isClient, setIsClient] = useState(false);
+  const [editInfo, setEditInfo] = useState<ClientOrderType>();
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [minPrice, setMinPrice] = useState<number | undefined>(
+    searchParams["price"]?.split("to")[0]
+  );
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(
+    searchParams["price"]?.split("to")[1]
+  );
+  const [query, setQuery] = useState(
+    storedQuery
+      ? queryString.parse(storedQuery, { arrayFormat: "comma" })
+      : searchParams
+  );
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+  const cache = React.useMemo<Entity>(() => createCache(), []);
+  const isServerInserted = React.useRef<boolean>(false);
+
+  const parsedCurrent =
+    storedQuery &&
+    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
+  const defaultCurrent =
+    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
+
+  const router = useRouter();
+
   useServerInsertedHTML(() => {
     // avoid duplicate css insert
     if (isServerInserted.current) {
@@ -64,32 +88,9 @@ const OrderTable: React.FC<{
     );
   });
 
-  const getDefaultFilter = (storedQuery: string | null, key: string) => {
-    const keyQuery = storedQuery
-      ? queryString.parse(storedQuery, { arrayFormat: "comma" })[key]
-      : null;
-    const parsedKeyQuery = Array.isArray(keyQuery)
-      ? keyQuery
-      : keyQuery
-      ? [keyQuery]
-      : null;
-
-    const defaultFilter =
-      parsedKeyQuery && parsedKeyQuery.length > 0 ? parsedKeyQuery : null;
-
-    return defaultFilter as any;
-  };
-
-  const [query, setQuery] = useState(
-    storedQuery
-      ? queryString.parse(storedQuery, { arrayFormat: "comma" })
-      : searchParams
-  );
-  const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
-    storedQuery = localStorage.getItem("query");
+
     if (query["price"]?.split("to")[0])
       setMinPrice(query["price"]?.split("to")[0]);
 
@@ -104,12 +105,7 @@ const OrderTable: React.FC<{
       setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
     }
   }, []);
-  const [minPrice, setMinPrice] = useState<number | undefined>(
-    searchParams["price"]?.split("to")[0]
-  );
-  const [maxPrice, setMaxPrice] = useState<number | undefined>(
-    searchParams["price"]?.split("to")[1]
-  );
+
   const columns: ColumnsType<ClientOrderType> = [
     {
       title: "ქალაქი",
@@ -282,9 +278,8 @@ const OrderTable: React.FC<{
       ),
     },
   ];
-  const [editInfo, setEditInfo] = useState<ClientOrderType>();
-  const [isEdit, setIsEdit] = useState<boolean>(false);
 
+  //functions
   const handleEditClick = (record: ClientOrderType) => {
     setEditInfo(record);
     setIsEdit(true);
@@ -352,7 +347,6 @@ const OrderTable: React.FC<{
   };
 
   //selection
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (selectedRowIds: React.Key[]) => {
     setSelectedRowKeys(selectedRowIds);
@@ -379,12 +373,6 @@ const OrderTable: React.FC<{
     ],
   };
 
-  const parsedCurrent =
-    storedQuery &&
-    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
-  const defaultCurrent =
-    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
-
   return isClient ? (
     <StyleProvider cache={cache}>
       <Table
@@ -405,8 +393,7 @@ const OrderTable: React.FC<{
         </>
       )}
     </StyleProvider>
-  ) : (
-  //   <ConfigProvider
+  ) : //   <ConfigProvider
   //   theme={{
   //     components: {
   //       Spin: {
@@ -419,8 +406,7 @@ const OrderTable: React.FC<{
   // >
   //   <Spin className="block m-auto"/>
   // </ConfigProvider>
-  null
-  );
+  null;
 };
 
 export default OrderTable;
