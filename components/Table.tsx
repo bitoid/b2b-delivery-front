@@ -9,12 +9,17 @@ import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
 import { useServerInsertedHTML } from "next/navigation";
 import queryString from "query-string";
-import { SortOrder, TableRowSelection } from "antd/es/table/interface";
+import {
+  FilterValue,
+  SortOrder,
+  SorterResult,
+  TableRowSelection,
+} from "antd/es/table/interface";
 import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
-
+import { RestTwoTone } from "@ant-design/icons";
 interface CommentProps {
   text: string;
 }
@@ -33,7 +38,7 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
           {text}
         </span>
       ) : (
-        <span>{text.slice(0, 10)}...</span>
+        <span>{text.slice(0, 7)}...</span>
       )}
     </span>
   );
@@ -62,6 +67,15 @@ const OrderTable: React.FC<{
       : searchParams
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  let storedFilters = localStorage.getItem("filters");
+  const [filteredInfo, setFilteredInfo] = useState<
+    Record<string, FilterValue | null>
+  >(storedFilters ? JSON.parse(storedFilters) : {});
+
+  let storedSorteds = localStorage.getItem("sorteds");
+  const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>(
+    storedSorteds ? JSON.parse(storedSorteds) : {}
+  );
 
   const cache = React.useMemo<Entity>(() => createCache(), []);
   const isServerInserted = React.useRef<boolean>(false);
@@ -87,7 +101,6 @@ const OrderTable: React.FC<{
       />
     );
   });
-
   useEffect(() => {
     setIsClient(true);
 
@@ -113,10 +126,11 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "town"),
       filterMode: "tree",
       filterSearch: true,
+      filteredValue: filteredInfo?.town || null,
 
       defaultFilteredValue: getDefaultFilter(storedQuery, "town"),
       onFilter: (value, record) => record.town.includes(value as string),
-      width: "15%",
+      width: "13%",
     },
     {
       title: "სახელი და გვარი",
@@ -124,10 +138,10 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "fullName"),
       filterMode: "tree",
       filterSearch: true,
-
+      filteredValue: filteredInfo?.fullName || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "fullName"),
       onFilter: (value, record) => record.fullName == (value as string),
-      width: "17%",
+      width: "19%",
     },
     {
       title: "მისამართი",
@@ -135,9 +149,10 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "address"),
       filterMode: "tree",
       filterSearch: true,
+      filteredValue: filteredInfo?.address || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
       onFilter: (value, record) => record.address.includes(value as string),
-      width: "15%",
+      width: "17%",
     },
     {
       title: "ტელეფონი",
@@ -145,6 +160,7 @@ const OrderTable: React.FC<{
       filters: getUniques(data, "phone"),
       filterMode: "tree",
       filterSearch: true,
+      filteredValue: filteredInfo?.phone || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "phone"),
       onFilter: (value, record) => record.phone.includes(value as string),
       width: "15%",
@@ -153,13 +169,15 @@ const OrderTable: React.FC<{
     {
       title: "კომენტარი",
       dataIndex: "comment",
-      width: "16%",
+      width: "14%",
+      filteredValue: filteredInfo?.comment || null,
       render: (text: string) => <Comment text={text} />,
     },
     {
       title: "ფასი",
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
+      sortOrder: sortedInfo.field === "price" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -169,7 +187,7 @@ const OrderTable: React.FC<{
           : undefined,
       defaultFilteredValue: getDefaultFilter(storedQuery, "price"),
       width: "10%",
-
+      filteredValue: filteredInfo?.price || null,
       filterDropdown: ({ setSelectedKeys, confirm }) => {
         return (
           <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -253,6 +271,8 @@ const OrderTable: React.FC<{
       title: "საკურიერო",
       dataIndex: "courierPrice",
       sorter: (a, b) => a.price - b.price,
+      filteredValue: filteredInfo?.courierPrice || null,
+      sortOrder: sortedInfo.field === "courierPrice" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -264,14 +284,33 @@ const OrderTable: React.FC<{
     },
 
     {
-      title: "",
+      title: () => (
+        <>
+          <span
+            className="text-[#3b82f6] cursor-pointer hover:opacity-60"
+            onClick={() => {
+              localStorage.removeItem("query");
+              router.push("/orders?current=1&pageSize=10");
+              setQuery(searchParams);
+              setMinPrice(undefined);
+              setMaxPrice(undefined);
+              setFilteredInfo({});
+              setSortedInfo({});
+            }}
+          >
+            გასუფთავება
+          </span>
+          <RestTwoTone />
+        </>
+      ),
       dataIndex: "edit",
-      width: "7%",
+      width: "16%",
       render: (_text: string, record: ClientOrderType) => (
         <Button
           type="link"
           onClick={() => handleEditClick(record)}
           icon={<EditFilled />}
+          className="ml-auto block"
         >
           {" "}
         </Button>
@@ -292,7 +331,12 @@ const OrderTable: React.FC<{
     extra
   ) => {
     // s", pagination, filters, sorter, extra);
-
+    setFilteredInfo(filters);
+    setSortedInfo(
+      sorter as SorterResult<{ price: number; courierPrice: number }>
+    );
+    localStorage.setItem("filters", JSON.stringify(filters));
+    localStorage.setItem("sorteds", JSON.stringify(sorter));
     const filteredSorter: Record<string, SortOrder | undefined> = {};
     const filteredFilters: Record<string, (string | number | boolean)[]> = {};
     // Filtering out null values from sorter
