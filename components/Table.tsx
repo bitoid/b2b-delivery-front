@@ -54,8 +54,8 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   searchParams: any;
-  filteredData: ClientOrderType[];
-}> = ({ data, searchParams, filteredData }) => {
+  // filteredData: ClientOrderType[];
+}> = ({ data, searchParams }) => {
   let storedQuery =
     typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
 
@@ -225,7 +225,6 @@ const OrderTable: React.FC<{
                 selectorBg: getColorForStatus(record.status),
               },
             },
-           
           }}
         >
           <Select
