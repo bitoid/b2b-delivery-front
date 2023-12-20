@@ -7,6 +7,7 @@ interface ClientOrderType {
   comment: string;
   price: number;
   courierPrice: number;
+  status: string;
 }
 
 export type { ClientOrderType };

@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button, ConfigProvider, Input, Space, Spin, Table } from "antd";
+import {
+  Button,
+  ConfigProvider,
+  Input,
+  Select,
+  Space,
+  Spin,
+  Table,
+} from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
 import { getUniques, getDefaultFilter } from "@/lib/utils";
@@ -43,7 +51,6 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
     </span>
   );
 };
-
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   searchParams: any;
@@ -118,7 +125,27 @@ const OrderTable: React.FC<{
       setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
     }
   }, []);
+  const [orders, setOrders] = useState<ClientOrderType[]>(data);
 
+  const handleStatusChange = (key: number, value: string) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === key ? { ...order, status: value } : order
+      )
+    );
+  };
+  const getColorForStatus = (status: string) => {
+    switch (status) {
+      case "todo":
+        return "red";
+      case "doing":
+        return "orange";
+      case "done":
+        return "green";
+      default:
+        return "black";
+    }
+  };
   const columns: ColumnsType<ClientOrderType> = [
     {
       title: "ქალაქი",
@@ -172,6 +199,46 @@ const OrderTable: React.FC<{
       width: "14%",
       filteredValue: filteredInfo?.comment || null,
       render: (text: string) => <Comment text={text} />,
+    },
+    {
+      title: "სტატუსი",
+      dataIndex: "status",
+      width: "10%",
+      filters: [
+        { text: "Todo", value: "todo" },
+        { text: "Doing", value: "doing" },
+        { text: "Done", value: "done" },
+      ],
+      filteredValue: filteredInfo?.status || null,
+      onFilter: (value, record) => {
+        console.log(record, record.status === value);
+        return record.status === value;
+      },
+      filterMode: "tree",
+      render: (text, record) => (
+        <ConfigProvider
+          theme={{
+            components: {
+              Select: {
+                optionSelectedBg: getColorForStatus(record.status),
+                optionSelectedColor: "white",
+                selectorBg: getColorForStatus(record.status),
+              },
+            },
+           
+          }}
+        >
+          <Select
+            value={record.status}
+            className={`w-[80px]`}
+            onChange={(value) => handleStatusChange(record.id, value)}
+          >
+            <Select.Option value="todo">Todo</Select.Option>
+            <Select.Option value="doing">Doing</Select.Option>
+            <Select.Option value="done">Done</Select.Option>
+          </Select>
+        </ConfigProvider>
+      ),
     },
     {
       title: "ფასი",
@@ -421,9 +488,9 @@ const OrderTable: React.FC<{
     <StyleProvider cache={cache}>
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={orders}
         onChange={onChange}
-        scroll={{ y: "50vh", x: 1150 }}
+        scroll={{ y: "50vh", x: 1400 }}
         className="custom-scroll "
         sticky={true}
         rowSelection={rowSelection}
