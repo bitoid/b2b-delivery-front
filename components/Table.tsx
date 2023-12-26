@@ -28,6 +28,7 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { RestTwoTone } from "@ant-design/icons";
+
 interface CommentProps {
   text: string;
 }
@@ -59,7 +60,6 @@ const OrderTable: React.FC<{
   let storedQuery =
     typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
 
-  const [isClient, setIsClient] = useState(false);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
@@ -74,22 +74,19 @@ const OrderTable: React.FC<{
       : searchParams
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  let storedFilters =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("filters")
-      : null;
 
   const [filteredInfo, setFilteredInfo] = useState<
     Record<string, FilterValue | null>
-  >(storedFilters ? JSON.parse(storedFilters) : {});
-
-  let storedSorteds =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("sorteds")
-      : null;
+  >(
+    window.localStorage.getItem("filters")
+      ? JSON.parse(window.localStorage.getItem("filters") || "")
+      : {}
+  );
 
   const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>(
-    storedSorteds ? JSON.parse(storedSorteds) : {}
+    window.localStorage.getItem("filters")
+      ? JSON.parse(window.localStorage.getItem("filters") || "")
+      : {}
   );
 
   const cache = React.useMemo<Entity>(() => createCache(), []);
@@ -117,8 +114,6 @@ const OrderTable: React.FC<{
     );
   });
   useEffect(() => {
-    setIsClient(true);
-
     if (query["price"]?.split("to")[0])
       setMinPrice(query["price"]?.split("to")[0]);
 
@@ -492,7 +487,7 @@ const OrderTable: React.FC<{
     ],
   };
 
-  return isClient ? (
+  return (
     <StyleProvider cache={cache}>
       <Table
         columns={columns}
@@ -511,21 +506,20 @@ const OrderTable: React.FC<{
           <EditOrder order={editInfo} />
         </>
       )}
-    </StyleProvider>
-  ) : //   <ConfigProvider
-  //   theme={{
-  //     components: {
-  //       Spin: {
-  //        dotSize: 100,
-  //        colorPrimary: "#1677ff",
-  //        colorBgContainer: "black"
-  //       },
-  //     },
-  //   }}
-  // >
-  //   <Spin className="block m-auto"/>
-  // </ConfigProvider>
-  null;
+    </StyleProvider> //   <ConfigProvider
+    //   theme={{
+    //     components: {
+    //       Spin: {
+    //        dotSize: 100,
+    //        colorPrimary: "#1677ff",
+    //        colorBgContainer: "black"
+    //       },
+    //     },
+    //   }}
+    // >
+    //   <Spin className="block m-auto"/>
+    // </ConfigProvider>
+  );
 };
 
 export default OrderTable;
