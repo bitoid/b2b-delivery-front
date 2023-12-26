@@ -12,7 +12,7 @@ import {
 } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
-import { getUniques, getDefaultFilter } from "@/lib/utils";
+import { getUniques, getDefaultFilter, getColorForStatus } from "@/lib/utils";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
 import { useServerInsertedHTML } from "next/navigation";
@@ -57,9 +57,10 @@ const OrderTable: React.FC<{
   searchParams: any;
   filteredData: ClientOrderType[];
 }> = ({ data, searchParams }) => {
-  let storedQuery =
-    typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
+  let storedQuery = null;
+  const router = useRouter();
 
+  const [orders, setOrders] = useState<ClientOrderType[]>(data);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
@@ -74,46 +75,22 @@ const OrderTable: React.FC<{
       : searchParams
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [filteredInfo, setFilteredInfo] =
+    useState<Record<string, FilterValue | null>>();
+  const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>();
 
-  const [filteredInfo, setFilteredInfo] = useState<
-    Record<string, FilterValue | null>
-  >(
-    window.localStorage.getItem("filters")
-      ? JSON.parse(window.localStorage.getItem("filters") || "")
-      : {}
-  );
-
-  const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>(
-    window.localStorage.getItem("filters")
-      ? JSON.parse(window.localStorage.getItem("filters") || "")
-      : {}
-  );
-
-  const cache = React.useMemo<Entity>(() => createCache(), []);
-  const isServerInserted = React.useRef<boolean>(false);
-
-  const parsedCurrent =
-    storedQuery &&
-    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
-  const defaultCurrent =
-    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
-
-  const router = useRouter();
-
-  useServerInsertedHTML(() => {
-    // avoid duplicate css insert
-    if (isServerInserted.current) {
-      return;
-    }
-    isServerInserted.current = true;
-    return (
-      <style
-        id="antd"
-        dangerouslySetInnerHTML={{ __html: extractStyle(cache, true) }}
-      />
-    );
-  });
   useEffect(() => {
+    let storedQuery = localStorage.getItem("query");
+    setFilteredInfo(
+      window.localStorage.getItem("filters")
+        ? JSON.parse(window.localStorage.getItem("filters") || "")
+        : {}
+    );
+    setSortedInfo(
+      window.localStorage.getItem("sorteds")
+        ? JSON.parse(window.localStorage.getItem("sorteds") || "")
+        : {}
+    );
     if (query["price"]?.split("to")[0])
       setMinPrice(query["price"]?.split("to")[0]);
 
@@ -128,27 +105,31 @@ const OrderTable: React.FC<{
       setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
     }
   }, []);
-  const [orders, setOrders] = useState<ClientOrderType[]>(data);
 
-  const handleStatusChange = (key: number, value: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === key ? { ...order, status: value } : order
-      )
-    );
-  };
-  const getColorForStatus = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "red";
-      case "doing":
-        return "orange";
-      case "done":
-        return "green";
-      default:
-        return "black";
+  const parsedCurrent =
+    storedQuery &&
+    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
+  const defaultCurrent =
+    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
+
+  //optimezed antd for nextjs
+  const cache = React.useMemo<Entity>(() => createCache(), []);
+  const isServerInserted = React.useRef<boolean>(false);
+
+  useServerInsertedHTML(() => {
+    // avoid duplicate css insert
+    if (isServerInserted.current) {
+      return;
     }
-  };
+    isServerInserted.current = true;
+    return (
+      <style
+        id="antd"
+        dangerouslySetInnerHTML={{ __html: extractStyle(cache, true) }}
+      />
+    );
+  });
+
   const columns: ColumnsType<ClientOrderType> = [
     {
       title: "ქალაქი",
@@ -245,7 +226,7 @@ const OrderTable: React.FC<{
       title: "ფასი",
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
-      sortOrder: sortedInfo.field === "price" ? sortedInfo.order : null,
+      sortOrder: sortedInfo?.field === "price" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -340,7 +321,7 @@ const OrderTable: React.FC<{
       dataIndex: "courierPrice",
       sorter: (a, b) => a.price - b.price,
       filteredValue: filteredInfo?.courierPrice || null,
-      sortOrder: sortedInfo.field === "courierPrice" ? sortedInfo.order : null,
+      sortOrder: sortedInfo?.field === "courierPrice" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -387,8 +368,37 @@ const OrderTable: React.FC<{
       ),
     },
   ];
+  const rowSelection: TableRowSelection<ClientOrderType> = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    getCheckboxProps: (record: ClientOrderType) => ({
+      id: String(record.id),
+    }),
+    selections: [
+      {
+        key: "delete",
+        text: "მონიშნული შეკვეთების წაშლა",
+        onSelect: () => {},
+      },
+      {
+        key: "send",
+        text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
+        onSelect: () => {
+          // edRowKeys);
+        },
+      },
+    ],
+  };
 
-  //functions
+  //event handlers
+  const handleStatusChange = (key: number, value: string) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === key ? { ...order, status: value } : order
+      )
+    );
+  };
+
   const handleEditClick = (record: ClientOrderType) => {
     setEditInfo(record);
     setIsEdit(true);
@@ -460,32 +470,9 @@ const OrderTable: React.FC<{
     );
   };
 
-  //selection
-
-  const onSelectChange = (selectedRowIds: React.Key[]) => {
+  function onSelectChange(selectedRowIds: React.Key[]) {
     setSelectedRowKeys(selectedRowIds);
-  };
-  const rowSelection: TableRowSelection<ClientOrderType> = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-    getCheckboxProps: (record: ClientOrderType) => ({
-      id: String(record.id),
-    }),
-    selections: [
-      {
-        key: "delete",
-        text: "მონიშნული შეკვეთების წაშლა",
-        onSelect: () => {},
-      },
-      {
-        key: "send",
-        text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-        onSelect: () => {
-          // edRowKeys);
-        },
-      },
-    ],
-  };
+  }
 
   return (
     <StyleProvider cache={cache}>

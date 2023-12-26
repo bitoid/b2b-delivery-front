@@ -31,13 +31,12 @@ export default async function OrdersPage({
 
   const filteredData: ClientOrderType[] = await getFilteredOrders(searchParams);
   const orders: ClientOrderType[] = await getOrders();
-  console.log(orders);
 
   return (
     <>
       <OrderTable
         data={orders}
-        // filteredData={filteredData}
+        filteredData={filteredData}
         searchParams={searchParams}
       />
     </>
@@ -71,7 +70,7 @@ const getOrders = async () => {
     }
 
     let orders = await response.json();
-    console.log(orders);
+
     return orders;
   } catch (err) {
     console.log(err);

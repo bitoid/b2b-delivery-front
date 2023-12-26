@@ -3,12 +3,12 @@ import { ClassValue, clsx } from "clsx";
 import queryString from "query-string";
 import { twMerge } from "tailwind-merge";
 
-//for tailwind classnames
+/////////////////////////for tailwind classnames/////////////////////////
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-//for filters
+////////////////////////table utils////////////////////////
 export function getUniques(data: ClientOrderType[], fieldName: string) {
   return data
     ?.filter(
@@ -33,4 +33,17 @@ export function getDefaultFilter(storedQuery: string | null, key: string) {
     parsedKeyQuery && parsedKeyQuery.length > 0 ? parsedKeyQuery : null;
 
   return defaultFilter as any;
+}
+
+export function getColorForStatus(status: string) {
+  switch (status) {
+    case "todo":
+      return "red";
+    case "doing":
+      return "orange";
+    case "done":
+      return "green";
+    default:
+      return "black";
+  }
 }
