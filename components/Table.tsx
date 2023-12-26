@@ -28,6 +28,7 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { RestTwoTone } from "@ant-design/icons";
+import { getSession } from "next-auth/react";
 interface CommentProps {
   text: string;
 }
@@ -74,12 +75,20 @@ const OrderTable: React.FC<{
       : searchParams
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  let storedFilters = localStorage.getItem("filters");
+  let storedFilters =
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("filters")
+      : null;
+
   const [filteredInfo, setFilteredInfo] = useState<
     Record<string, FilterValue | null>
   >(storedFilters ? JSON.parse(storedFilters) : {});
 
-  let storedSorteds = localStorage.getItem("sorteds");
+  let storedSorteds =
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("sorteds")
+      : null;
+
   const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>(
     storedSorteds ? JSON.parse(storedSorteds) : {}
   );

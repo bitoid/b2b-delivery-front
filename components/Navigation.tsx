@@ -15,14 +15,19 @@ import { usePathname } from "next/navigation";
 import AddOrder from "./AddOrder";
 import BlackScreen from "./BlackScreen";
 
-export default function Navigation() {
-  const navigation = [
-    { name: "გაგზავნილი შეკვეთები", href: "/orders" },
-    { name: "პროფილი", href: "/profile" },
-  ];
-  const userNavigation = [{ name: "სისტემიდან გასვლა", href: "/login" }];
+import { signOut } from "next-auth/react";
+export default function Navigation({ currentUser }: { currentUser: any }) {
+  console.log(currentUser);
+  const navigation = currentUser
+    ? [
+        { name: "გაგზავნილი შეკვეთები", href: "/orders" },
+        { name: "პროფილი", href: "/profile" },
+      ]
+    : [];
 
-  const getPageTitle = (href: string) => {
+  const userNavigation = [{ name: "სისტემიდან გასვლა", href: "" }];
+
+  const getPageTitle = (href: string | null) => {
     switch (href) {
       case "/orders":
         return "გაგზავნილი შეკვეთები";
@@ -112,6 +117,11 @@ export default function Navigation() {
                                       active ? "bg-gray-100" : "",
                                       "block px-4 py-2 text-sm text-gray-700"
                                     )}
+                                    onClick={() => {
+                                      signOut({
+                                        callbackUrl: "/login",
+                                      });
+                                    }}
                                   >
                                     {item.name}
                                   </Link>

@@ -2,8 +2,13 @@ import { ClientOrderType } from "@/types/orders";
 import { Metadata } from "next";
 import queryString from "query-string";
 import OrderTable from "@/components/Table";
-import Cookies from "js-cookie";
-
+import { cookies } from "next/headers";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/session";
+import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import authOptions from "@/lib/auth";
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
 };
@@ -21,8 +26,18 @@ export default async function OrdersPage({
   // const filteredOrders: ClientOrderType[] = await getFilteredOrders(
   //   searchParams
   // );
-  const orders: ClientOrderType[] = await getOrders();
-  console.log(orders);
+  const token = cookies().get("token");
+
+  // if (!token) redirect("/login");
+  const user = await getCurrentUser(); // Update type of user
+
+  // END: abpxx6d04wxr
+
+  const orders: ClientOrderType[] = await getOrders(
+    user?.token as unknown as RequestCookie
+  );
+  console.log(user);
+
   return (
     <>
       <OrderTable
@@ -47,13 +62,12 @@ export default async function OrdersPage({
 //   }
 // };
 
-const getOrders = async () => {
+const getOrders = async (token: RequestCookie | undefined) => {
   try {
-    const token = Cookies.get("token");
-
-    let response = await fetch(`${process.env.DATABASE_URL}/orders/`, {
+    let response = await fetch(`${process.env.API_URL}/orders/`, {
+      cache: "no-store",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Token ${token}`,
       },
     });
 
@@ -62,7 +76,7 @@ const getOrders = async () => {
     }
 
     let orders = await response.json();
-
+    console.log(orders);
     return orders;
   } catch (err) {
     console.log(err);
