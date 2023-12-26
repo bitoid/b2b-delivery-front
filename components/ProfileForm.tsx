@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { PencilIcon } from "@heroicons/react/24/outline";
 
-export default function ProfileForm() {
+export default function ProfileForm({ user }: { user: any }) {
   const [isEdit, setIsEdit] = useState(false);
 
+  console.log(user);
   return (
     <div className="mx-auto max-w-2xl space-y-16 lg:mx-0 lg:max-w-none">
       <div>
@@ -34,7 +35,7 @@ export default function ProfileForm() {
                 id="company"
                 autoComplete="given-name"
                 disabled={!isEdit}
-                defaultValue={"შპს ზუმერი"}
+                defaultValue={user.name}
                 className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
               />
             </dd>
@@ -50,7 +51,7 @@ export default function ProfileForm() {
         <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
           <div className="pt-6 sm:flex">
             <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-              სახელი
+              სახელი და გვარი
             </dt>
             <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
               <input
@@ -59,30 +60,13 @@ export default function ProfileForm() {
                 id="first-name"
                 autoComplete="given-name"
                 disabled={!isEdit}
-                defaultValue={"ბექა"}
+                defaultValue={user.representative_full_name}
                 className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
               />
             </dd>
           </div>
 
           <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-            <div className="pt-6 sm:flex">
-              <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-                გვარი
-              </dt>
-              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                <input
-                  type="text"
-                  name="last-name"
-                  id="last-name"
-                  autoComplete="given-name"
-                  disabled={!isEdit}
-                  defaultValue={"მაისურაძე"}
-                  className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-                />
-              </dd>
-            </div>
-
             <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
               <div className="pt-6 sm:flex">
                 <dt className="font-bold text-gray-900 sm:w-64 sm:flex-none sm:pr-6 text-[17px]">
@@ -95,7 +79,7 @@ export default function ProfileForm() {
                     id="email"
                     autoComplete="given-name"
                     disabled={!isEdit}
-                    defaultValue={"beqamaisuradze912@gmail.com"}
+                    defaultValue={user.email}
                     className="block w-[100%] max-w-[350px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
                   />
                 </dd>
@@ -112,7 +96,7 @@ export default function ProfileForm() {
                       id="number"
                       autoComplete="given-name"
                       disabled={!isEdit}
-                      defaultValue={"(+995) 579 09 55 87"}
+                      defaultValue={user.phone_number}
                       className="block w-[250px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
                     />
                   </dd>

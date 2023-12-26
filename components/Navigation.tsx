@@ -8,6 +8,7 @@ import {
   PlusIcon,
   XMarkIcon,
   BuildingOffice2Icon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,14 +18,15 @@ import BlackScreen from "./BlackScreen";
 
 import { signOut } from "next-auth/react";
 export default function Navigation({ currentUser }: { currentUser: any }) {
-  console.log(currentUser);
   const navigation = currentUser
     ? [
         { name: "გაგზავნილი შეკვეთები", href: "/orders" },
         { name: "პროფილი", href: "/profile" },
       ]
     : [];
-
+  if (currentUser.user_data.user_type == "admin") {
+    navigation.push({ name: "მომხმარებლის დამატება", href: "/add-user" });
+  }
   const userNavigation = [{ name: "სისტემიდან გასვლა", href: "" }];
 
   const getPageTitle = (href: string | null) => {
@@ -37,9 +39,14 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
         return "";
     }
   };
+  console.log(currentUser);
   const user = {
-    name: "შპს ზუმერი",
-    email: "tom@example.com",
+    name:
+      currentUser.user_data.user_type == "admin"
+        ? currentUser.user_data.profile
+        : currentUser.user_data.profile.name,
+    email: currentUser.user_data.email,
+    user_type: currentUser.user_data.user_type,
   };
 
   const path = usePathname();
@@ -94,7 +101,11 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
                           <Menu.Button className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm  ">
                             <div className="flex gap-[5px] p-1  hover:opacity-80">
                               <span className="text-white fo">{user.name}</span>
-                              <BuildingOffice2Icon className="block w-6 h-6 company-logo" />
+                              {user.user_type == "client" ? (
+                                <BuildingOffice2Icon className="block w-6 h-6 company-logo" />
+                              ) : (
+                                <UserIcon className="block w-6 h-6 company-logo" />
+                              )}
                             </div>
                           </Menu.Button>
                         </div>

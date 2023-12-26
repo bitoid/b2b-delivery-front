@@ -28,7 +28,6 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { RestTwoTone } from "@ant-design/icons";
-import { getSession } from "next-auth/react";
 interface CommentProps {
   text: string;
 }
@@ -55,7 +54,7 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   searchParams: any;
-  // filteredData: ClientOrderType[];
+  filteredData: ClientOrderType[];
 }> = ({ data, searchParams }) => {
   let storedQuery =
     typeof window !== "undefined" ? window.localStorage.getItem("query") : null;
@@ -220,7 +219,6 @@ const OrderTable: React.FC<{
       ],
       filteredValue: filteredInfo?.status || null,
       onFilter: (value, record) => {
-        console.log(record, record.status === value);
         return record.status === value;
       },
       filterMode: "tree",
@@ -365,6 +363,8 @@ const OrderTable: React.FC<{
             className="text-[#3b82f6] cursor-pointer hover:opacity-60"
             onClick={() => {
               localStorage.removeItem("query");
+              localStorage.removeItem("filters");
+              localStorage.removeItem("sorteds");
               router.push("/orders?current=1&pageSize=10");
               setQuery(searchParams);
               setMinPrice(undefined);

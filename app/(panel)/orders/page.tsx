@@ -26,49 +26,44 @@ export default async function OrdersPage({
   // const filteredOrders: ClientOrderType[] = await getFilteredOrders(
   //   searchParams
   // );
-  const token = cookies().get("token");
 
-  // if (!token) redirect("/login");
-  const user = await getCurrentUser(); // Update type of user
+  const user = await getCurrentUser();
 
-  // END: abpxx6d04wxr
-
-  const orders: ClientOrderType[] = await getOrders(
-    user?.token as unknown as RequestCookie
-  );
-  console.log(user);
+  const filteredData: ClientOrderType[] = await getFilteredOrders(searchParams);
+  const orders: ClientOrderType[] = await getOrders();
+  console.log(orders);
 
   return (
     <>
       <OrderTable
         data={orders}
-        // filteredData={filteredOrders}
+        // filteredData={filteredData}
         searchParams={searchParams}
       />
     </>
   );
 }
 
-// const getFilteredOrders = async (searchParams: ParamsType) => {
-//   const query = queryString.stringify(searchParams);
-//   try {
-//     let response = await fetch(`http://localhost:4000/orders?${query}`, {
-//       cache: "no-store",
-//     });
-//     let orders = await response.json();
-//     return orders;
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
-
-const getOrders = async (token: RequestCookie | undefined) => {
+const getFilteredOrders = async (searchParams: ParamsType) => {
+  const query = queryString.stringify(searchParams);
   try {
-    let response = await fetch(`${process.env.API_URL}/orders/`, {
+    let response = await fetch(`http://localhost:4000/orders?${query}`, {
       cache: "no-store",
-      headers: {
-        Authorization: `Token ${token}`,
-      },
+    });
+    let orders = await response.json();
+    return orders;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const getOrders = async () => {
+  try {
+    let response = await fetch(`http://localhost:4000/orders`, {
+      cache: "no-store",
+      // headers: {
+      //   Authorization: `Token ${token}`,
+      // },
     });
 
     if (!response.ok) {
