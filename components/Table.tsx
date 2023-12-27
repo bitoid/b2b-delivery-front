@@ -64,10 +64,10 @@ const OrderTable: React.FC<{
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
-    searchParams["price"]?.split("to")[0]
+    searchParams["item_price"]?.split("to")[0]
   );
   const [maxPrice, setMaxPrice] = useState<number | undefined>(
-    searchParams["price"]?.split("to")[1]
+    searchParams["item_price"]?.split("to")[1]
   );
   const [query, setQuery] = useState(
     storedQuery
@@ -91,11 +91,11 @@ const OrderTable: React.FC<{
         ? JSON.parse(window.localStorage.getItem("sorteds") || "")
         : {}
     );
-    if (query["price"]?.split("to")[0])
-      setMinPrice(query["price"]?.split("to")[0]);
+    if (query["item_price"]?.split("to")[0])
+      setMinPrice(query["item_price"]?.split("to")[0]);
 
-    if (query["price"]?.split("to")[1])
-      setMaxPrice(query["price"]?.split("to")[1]);
+    if (query["item_price"]?.split("to")[1])
+      setMaxPrice(query["item_price"]?.split("to")[1]);
 
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
@@ -133,26 +133,30 @@ const OrderTable: React.FC<{
   const columns: ColumnsType<ClientOrderType> = [
     {
       title: "ქალაქი",
-      dataIndex: "town",
-      filters: getUniques(data, "town"),
+      dataIndex: "city",
+      filters: getUniques(data, "city"),
       filterMode: "tree",
       filterSearch: true,
-      filteredValue: filteredInfo?.town || null,
+      filteredValue: filteredInfo?.city || null,
 
-      defaultFilteredValue: getDefaultFilter(storedQuery, "town"),
-      onFilter: (value, record) => record.town.includes(value as string),
-      width: "13%",
+      defaultFilteredValue: getDefaultFilter(storedQuery, "city"),
+      onFilter: (value, record) => record.city.includes(value as string),
+      width: "9%",
     },
     {
       title: "სახელი და გვარი",
-      dataIndex: "fullName",
-      filters: getUniques(data, "fullName"),
+      dataIndex: "addressee_full_name",
+      filters: getUniques(data, "addressee_full_name"),
       filterMode: "tree",
       filterSearch: true,
-      filteredValue: filteredInfo?.fullName || null,
-      defaultFilteredValue: getDefaultFilter(storedQuery, "fullName"),
-      onFilter: (value, record) => record.fullName == (value as string),
-      width: "19%",
+      filteredValue: filteredInfo?.addressee_full_name || null,
+      defaultFilteredValue: getDefaultFilter(
+        storedQuery,
+        "addressee_full_name"
+      ),
+      onFilter: (value, record) =>
+        record.addressee_full_name == (value as string),
+      width: "15%",
     },
     {
       title: "მისამართი",
@@ -163,24 +167,25 @@ const OrderTable: React.FC<{
       filteredValue: filteredInfo?.address || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
       onFilter: (value, record) => record.address.includes(value as string),
-      width: "17%",
+      width: "12%",
     },
     {
       title: "ტელეფონი",
-      dataIndex: "phone",
-      filters: getUniques(data, "phone"),
+      dataIndex: "phone_number",
+      filters: getUniques(data, "phone_number"),
       filterMode: "tree",
       filterSearch: true,
-      filteredValue: filteredInfo?.phone || null,
-      defaultFilteredValue: getDefaultFilter(storedQuery, "phone"),
-      onFilter: (value, record) => record.phone.includes(value as string),
-      width: "15%",
+      filteredValue: filteredInfo?.phone_number || null,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "phone_number"),
+      onFilter: (value, record) =>
+        record.phone_number.includes(value as string),
+      width: "10%",
     },
 
     {
       title: "კომენტარი",
       dataIndex: "comment",
-      width: "14%",
+      width: "10%",
       filteredValue: filteredInfo?.comment || null,
       render: (text: string) => <Comment text={text} />,
     },
@@ -224,19 +229,19 @@ const OrderTable: React.FC<{
     },
     {
       title: "ფასი",
-      dataIndex: "price",
-      sorter: (a, b) => a.price - b.price,
-      sortOrder: sortedInfo?.field === "price" ? sortedInfo.order : null,
+      dataIndex: "item_price",
+      sorter: (a, b) => +a.item_price - +b.item_price,
+      sortOrder: sortedInfo?.field === "item_price" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
-          "price"
+          "item_price"
           ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
               .order as SortOrder)
           : undefined,
-      defaultFilteredValue: getDefaultFilter(storedQuery, "price"),
-      width: "10%",
-      filteredValue: filteredInfo?.price || null,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "item_price"),
+      width: "8%",
+      filteredValue: filteredInfo?.item_price || null,
       filterDropdown: ({ setSelectedKeys, confirm }) => {
         return (
           <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -302,14 +307,15 @@ const OrderTable: React.FC<{
         );
       },
       onFilter: (value, record) => {
-        const price = record.price as number;
+        const item_price = +record.item_price;
+
         if (
-          searchParams["price"]?.split("to")[0] &&
-          searchParams["price"]?.split("to")[1]
+          searchParams["item_price"]?.split("to")[0] &&
+          searchParams["item_price"]?.split("to")[1]
         ) {
           return (
-            price >= searchParams["price"]?.split("to")[0] &&
-            price <= searchParams["price"]?.split("to")[1]
+            item_price >= +searchParams["item_price"]?.split("to")[0] &&
+            item_price <= +searchParams["item_price"]?.split("to")[1]
           );
         }
 
@@ -318,24 +324,36 @@ const OrderTable: React.FC<{
     },
     {
       title: "საკურიერო",
-      dataIndex: "courierPrice",
-      sorter: (a, b) => a.price - b.price,
-      filteredValue: filteredInfo?.courierPrice || null,
-      sortOrder: sortedInfo?.field === "courierPrice" ? sortedInfo.order : null,
+      dataIndex: "courier_fee",
+      sorter: (a, b) => a.courier_fee - b.courier_fee,
+      filteredValue: filteredInfo?.courier_fee || null,
+      sortOrder: sortedInfo?.field === "courier_fee" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
-          "courierPrice"
+          "courier_fee"
           ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
               .order as SortOrder)
           : undefined,
-      width: "15%",
+      width: "10%",
     },
-
+    {
+      title: "თარიღი",
+      dataIndex: "created_at",
+      filters: getUniques(data, "created_at"),
+      filterMode: "tree",
+      filterSearch: true,
+      filteredValue: filteredInfo?.created_at || null,
+      defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
+      onFilter: (value, record) =>
+        record.phone_number.includes(value as string),
+      width: "9%",
+      render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
+    },
     {
       title: () => (
         <>
-          <span
+          {/* <span
             className="text-[#3b82f6] cursor-pointer hover:opacity-60"
             onClick={() => {
               localStorage.removeItem("query");
@@ -351,11 +369,11 @@ const OrderTable: React.FC<{
           >
             გასუფთავება
           </span>
-          <RestTwoTone />
+          <RestTwoTone /> */}
         </>
       ),
       dataIndex: "edit",
-      width: "16%",
+      width: "6%",
       render: (_text: string, record: ClientOrderType) => (
         <Button
           type="link"
@@ -413,7 +431,7 @@ const OrderTable: React.FC<{
     // s", pagination, filters, sorter, extra);
     setFilteredInfo(filters);
     setSortedInfo(
-      sorter as SorterResult<{ price: number; courierPrice: number }>
+      sorter as SorterResult<{ item_price: number; courierPrice: number }>
     );
     localStorage.setItem("filters", JSON.stringify(filters));
     localStorage.setItem("sorteds", JSON.stringify(sorter));
@@ -446,12 +464,14 @@ const OrderTable: React.FC<{
     if (!query["order"]) {
       delete query["field"];
     }
-    if (query["price"]) {
-      if (query["price"].length == 2) {
-        query["price"] = `${query["price"][0]}to${query["price"][1]}`;
+    if (query["item_price"]) {
+      if (query["item_price"].length == 2) {
+        query[
+          "item_price"
+        ] = `${query["item_price"][0]}to${query["item_price"][1]}`;
       } else {
-        query["price"] = `${query["price"][0].split("to")[0]}to${
-          query["price"][0].split("to")[1]
+        query["item_price"] = `${query["item_price"][0].split("to")[0]}to${
+          query["item_price"][0].split("to")[1]
         }`;
       }
     }

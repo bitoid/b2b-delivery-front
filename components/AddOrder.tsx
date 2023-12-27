@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import React from "react";
 import ExcelForm from "./ExcelForm";
-  import { useMarkedOrderStore } from "@/store/orders";
-  import ManuallyForm from "./ManuallyForm";
+import { useMarkedOrderStore } from "@/store/orders";
+import ManuallyForm from "./ManuallyForm";
 
-export default function AddOrder() {
+export default function AddOrder({ token }: { token: string }) {
   const [manually, setManually] = useState(true);
-  const {markedOrders} = useMarkedOrderStore()
-  console.log(markedOrders)
+  const { markedOrders } = useMarkedOrderStore();
+  console.log(markedOrders);
   return (
     <div className="bg-white shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
       <div className="flex gap-3 pl-7 pt-4">
@@ -22,7 +22,7 @@ export default function AddOrder() {
           )}
           onClick={() => setManually(true)}
         >
-          ფორმით 
+          ფორმით
         </button>
         <button
           type="button"
@@ -35,7 +35,7 @@ export default function AddOrder() {
           ექსელით
         </button>
       </div>
-      {manually ? <ManuallyForm /> : <ExcelForm />}
+      {manually ? <ManuallyForm token={token} /> : <ExcelForm />}
     </div>
   );
 }

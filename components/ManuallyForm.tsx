@@ -1,29 +1,36 @@
+import { ClientOrderType } from "@/types/orders";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 
-export default function ManuallyForm() {
-  const [name, setName] = useState("")
+export default function ManuallyForm({ token }: { token: string }) {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ClientOrderType>();
+
+  const onSubmit = async (data: ClientOrderType) => {
+    console.log(data);
+    let response = await fetch(`${process.env.API_URL}/orders/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: JSON.stringify({
+        ...data,
+        status: "DF",
+        sum: 20,
+        client: 2,
+        courirer: 2,
+      }),
+    });
+
+    console.log(response);
+  };
   return (
-    <form
-      onSubmit={async (e) => {
-        e.preventDefault();
-        let response = await fetch(`http://localhost:4000/orders`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: Math.random(),
-            town: "ქობულეთი",
-            fullName: name,
-            phone: "579-09-55-87",
-            address: "ქობულეთი",
-            comment: `ბლა ბლა ბლა ბლა`,
-            price: 190,
-            courierPrice: 10,
-          }),
-        });
-
-        console.log(response.statusText);
-      }}
-    >
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div className="px-4 py-6 sm:p-8 h-[70vh] overflow-y-auto custom-scroll">
         <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
           <div className="sm:col-span-4">
@@ -36,8 +43,8 @@ export default function ManuallyForm() {
             <div className="mt-2">
               <select
                 id="country"
-                name="country"
                 autoComplete="country-name"
+                {...register("city")}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
               >
                 <option>თბილისი</option>
@@ -51,33 +58,14 @@ export default function ManuallyForm() {
               htmlFor="first-name"
               className="block text-sm font-medium leading-6 text-gray-900"
             >
-              სახელი
+              სახელი და გვარი
             </label>
             <div className="mt-2">
               <input
                 type="text"
-                name="first-name"
                 id="first-name"
                 autoComplete="given-name"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="sm:col-span-3">
-            <label
-              htmlFor="last-name"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              გვარი
-            </label>
-            <div className="mt-2">
-              <input
-                type="text"
-                name="last-name"
-                id="last-name"
-                autoComplete="family-name"
+                {...register("addressee_full_name")}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -93,9 +81,9 @@ export default function ManuallyForm() {
             <div className="mt-2">
               <input
                 id="phone"
-                name="phone"
                 type="phone"
                 autoComplete="phone"
+                {...register("phone_number")}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -111,8 +99,8 @@ export default function ManuallyForm() {
             <div className="mt-2">
               <input
                 id="address"
-                name="address"
                 type="address"
+                {...register("address")}
                 autoComplete="address"
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -129,8 +117,8 @@ export default function ManuallyForm() {
             <div className="mt-2">
               <textarea
                 id="comment"
-                name="comment"
                 autoComplete="comment"
+                {...register("comment")}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -146,8 +134,8 @@ export default function ManuallyForm() {
               <div className="mt-2">
                 <input
                   type="text"
-                  name="price"
                   id="price"
+                  {...register("item_price")}
                   autoComplete="price"
                   className="block w-[100%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
@@ -163,8 +151,8 @@ export default function ManuallyForm() {
               <div className="mt-2">
                 <input
                   type="text"
-                  name="courier-price"
                   id="courier-price"
+                  {...register("courier_fee")}
                   autoComplete="price"
                   className="block w-[100%] max-w-[150px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />

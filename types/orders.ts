@@ -1,12 +1,12 @@
 interface ClientOrderType {
   id: number;
-  town: string;
-  fullName: string;
-  phone: string;
+  city: string;
+  addressee_full_name: string;
+  phone_number: string;
   address: string;
   comment: string;
-  price: number;
-  courierPrice: number;
+  item_price: number;
+  courier_fee: number;
   status: string;
 }
 

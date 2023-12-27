@@ -245,7 +245,7 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
       </div>
       {isAdd && (
         <>
-          <AddOrder />{" "}
+          <AddOrder token={currentUser.token} />{" "}
           <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
         </>
       )}

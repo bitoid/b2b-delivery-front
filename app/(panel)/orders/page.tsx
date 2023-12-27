@@ -28,10 +28,9 @@ export default async function OrdersPage({
   // );
 
   const user = await getCurrentUser();
-
+  console.log(user);
   const filteredData: ClientOrderType[] = await getFilteredOrders(searchParams);
-  const orders: ClientOrderType[] = await getOrders();
-
+  const orders: ClientOrderType[] = await getOrders(user?.token);
   return (
     <>
       <OrderTable
@@ -56,13 +55,13 @@ const getFilteredOrders = async (searchParams: ParamsType) => {
   }
 };
 
-const getOrders = async () => {
+const getOrders = async (token: string | undefined) => {
   try {
-    let response = await fetch(`http://localhost:4000/orders`, {
+    let response = await fetch(`${process.env.API_URL}/orders/`, {
       cache: "no-store",
-      // headers: {
-      //   Authorization: `Token ${token}`,
-      // },
+      headers: {
+        Authorization: `Token ${token}`,
+      },
     });
 
     if (!response.ok) {
