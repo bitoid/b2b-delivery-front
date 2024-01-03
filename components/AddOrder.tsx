@@ -7,14 +7,15 @@ import ExcelForm from "./ExcelForm";
 
 import OrderForm from "./OrderForm";
 import { ClientOrderType } from "@/types/orders";
+import { UserType } from "@/types/user";
 
 export default function AddOrder({
-  token,
+  user,
   setOrders,
   orders,
   setIsAdd,
 }: {
-  token: string | undefined;
+  user: UserType | undefined;
   setOrders: (orders: ClientOrderType[]) => void;
   orders: ClientOrderType[];
   setIsAdd: (isAdd: boolean) => void;
@@ -33,17 +34,13 @@ export default function AddOrder({
     try {
       const response = await fetch(`${process.env.API_URL}/orders/`, {
         method: "POST",
-        body: JSON.stringify({
-          ...data,
-          sum: Number(data.item_price) + Number(data.courier_fee),
-          status: "DF",
-          client: 1,
-        }),
+        body: JSON.stringify(modifiedData),
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
+          Authorization: `Token ${user?.token}`,
         },
       });
+      setOrders([...orders, modifiedData]);
       window.location.reload();
     } catch (err) {
       console.error(err);

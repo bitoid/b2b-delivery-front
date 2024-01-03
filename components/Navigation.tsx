@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
   BellIcon,
-  PlusIcon,
   XMarkIcon,
   BuildingOffice2Icon,
   UserIcon,
@@ -13,8 +12,6 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import AddOrder from "./AddOrder";
-import BlackScreen from "./BlackScreen";
 
 import { signOut } from "next-auth/react";
 export default function Navigation({ currentUser }: { currentUser: any }) {
@@ -39,7 +36,6 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
         return "";
     }
   };
-  console.log(currentUser);
   const user = {
     name:
       currentUser.user_data.user_type == "admin"

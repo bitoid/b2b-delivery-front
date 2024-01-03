@@ -20,7 +20,6 @@ export default async function OrdersPage({
   const user = await getCurrentUser();
 
   const orders: ClientOrderType[] = await getOrders(user?.token);
-
   console.log(orders);
   return (
     <>

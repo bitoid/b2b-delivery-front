@@ -1,7 +1,7 @@
 import { getColorForStatus } from "@/lib/utils";
 import { ClientOrderType } from "@/types/orders";
 import { ConfigProvider, Select } from "antd";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "./Table";
 import { TrashIcon } from "@heroicons/react/20/solid";

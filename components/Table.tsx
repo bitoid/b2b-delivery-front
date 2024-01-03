@@ -1,15 +1,7 @@
 "use client";
 
 import React, { createContext, useEffect, useState } from "react";
-import {
-  Button,
-  ConfigProvider,
-  Input,
-  Select,
-  Space,
-  Spin,
-  Table,
-} from "antd";
+import { Button, ConfigProvider, Input, Select, Space, Table } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
 import { getUniques, getDefaultFilter, getColorForStatus } from "@/lib/utils";
@@ -28,7 +20,7 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
-import { Session } from "next-auth";
+
 import { UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
@@ -420,7 +412,6 @@ const OrderTable: React.FC<{
               key: "delete",
               text: "მონიშნული შეკვეთების წაშლა",
               onSelect: () => {
-                console.log(selectedRowKeys);
                 try {
                   selectedRowKeys.forEach(async (id) => {
                     const response = await fetch(
@@ -604,7 +595,7 @@ const OrderTable: React.FC<{
       {isAdd && (
         <>
           <AddOrder
-            token={user?.token}
+            user={user}
             setOrders={setOrders}
             orders={orders}
             setIsAdd={setIsAdd}
