@@ -30,6 +30,8 @@ import EditOrder from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
 import { Session } from "next-auth";
 import { UserType } from "@/types/user";
+import { PlusIcon } from "@heroicons/react/20/solid";
+import AddOrder from "./AddOrder";
 
 interface CommentProps {
   text: string;
@@ -80,6 +82,7 @@ const OrderTable: React.FC<{
   const router = useRouter();
   const [orders, setOrders] = useState<ClientOrderType[]>(data);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
+  const [isAdd, setIsAdd] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
     searchParams["item_price"]?.split("to")[0]
@@ -370,8 +373,7 @@ const OrderTable: React.FC<{
       filterSearch: true,
       filteredValue: filteredInfo?.created_at || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
-      onFilter: (value, record) =>
-        record.phone_number.includes(value as string),
+      onFilter: (value, record) => record.created_at.includes(value as string),
       width: "9%",
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
     },
@@ -428,12 +430,31 @@ const OrderTable: React.FC<{
   };
 
   //event handlers
-  const handleStatusChange = (key: number, value: string) => {
+  const handleStatusChange = async (key: number, value: string) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
         order.id === key ? { ...order, status: value } : order
       )
     );
+
+    try {
+      const response = await fetch(`${process.env.API_URL}/orders/${key}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${user?.token}`,
+        },
+        body: JSON.stringify({ status: value }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const handleEditClick = (record: ClientOrderType) => {
@@ -534,19 +555,26 @@ const OrderTable: React.FC<{
           <EditOrder order={editInfo} />
         </TableContext.Provider>
       )}
-    </StyleProvider> //   <ConfigProvider
-    //   theme={{
-    //     components: {
-    //       Spin: {
-    //        dotSize: 100,
-    //        colorPrimary: "#1677ff",
-    //        colorBgContainer: "black"
-    //       },
-    //     },
-    //   }}
-    // >
-    //   <Spin className="block m-auto"/>
-    // </ConfigProvider>
+
+      <button
+        onClick={() => setIsAdd(true)}
+        className="mt-[-40px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
+      >
+        დამატება
+        <PlusIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
+      {isAdd && (
+        <>
+          <AddOrder
+            token={user?.token}
+            setOrders={setOrders}
+            orders={orders}
+            setIsAdd={setIsAdd}
+          />{" "}
+          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
+        </>
+      )}
+    </StyleProvider>
   );
 };
 

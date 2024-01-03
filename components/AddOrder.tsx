@@ -1,24 +1,36 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import React from "react";
 import ExcelForm from "./ExcelForm";
-import { useMarkedOrderStore } from "@/store/orders";
+
 import OrderForm from "./OrderForm";
 import { ClientOrderType } from "@/types/orders";
-import { TableContext } from "./Table";
 
-export default function AddOrder({ token }: { token: string }) {
+export default function AddOrder({
+  token,
+  setOrders,
+  orders,
+  setIsAdd,
+}: {
+  token: string | undefined;
+  setOrders: (orders: ClientOrderType[]) => void;
+  orders: ClientOrderType[];
+  setIsAdd: (isAdd: boolean) => void;
+}) {
   const [manually, setManually] = useState(true);
-  const { markedOrders } = useMarkedOrderStore();
 
   const onSubmit = async (data: ClientOrderType) => {
-    console.log({
+    const modifiedData = {
       ...data,
       sum: Number(data.item_price) + Number(data.courier_fee),
       status: "DF",
-    });
+      client: 1,
+      created_at: new Date().toISOString(),
+    };
+    setOrders([...orders, modifiedData]);
+    setIsAdd(false);
     try {
       const response = await fetch(`${process.env.API_URL}/orders/`, {
         method: "POST",

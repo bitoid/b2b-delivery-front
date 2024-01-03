@@ -1,4 +1,7 @@
 interface ClientOrderType {
+  sum: number;
+  status: string;
+  client: number;
   id: number;
   city: string;
   addressee_full_name: string;
@@ -7,8 +10,6 @@ interface ClientOrderType {
   comment: string;
   item_price: number;
   courier_fee: number;
-  status: string;
-  sum: string;
   created_at: string;
 }
 

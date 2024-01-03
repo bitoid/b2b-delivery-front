@@ -66,8 +66,8 @@ export default function ProfileForm({ user }: { user: any }) {
             </dd>
           </div>
 
-          <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-            <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
+          <dl className="mt-6 space-y-6 divide-y divide-gray-1000 text-sm leading-6">
+            <dl className="mt-6 space-y-6 divide-y divide-gray-100  text-sm leading-6">
               <div className="pt-6 sm:flex">
                 <dt className="font-bold text-gray-900 sm:w-64 sm:flex-none sm:pr-6 text-[17px]">
                   ელ. ფოსტა

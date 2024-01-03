@@ -17,14 +17,10 @@ export default async function OrdersPage({
 }: {
   searchParams: ParamsType;
 }) {
-  // const filteredOrders: ClientOrderType[] = await getFilteredOrders(
-  //   searchParams
-  // );
-
   const user = await getCurrentUser();
 
   const orders: ClientOrderType[] = await getOrders(user?.token);
-  console.log(orders);
+
   return (
     <>
       <OrderTable data={orders} searchParams={searchParams} user={user} />

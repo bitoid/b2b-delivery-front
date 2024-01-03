@@ -51,8 +51,6 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
 
   const path = usePathname();
 
-  const [isAdd, setIsAdd] = useState(false);
-
   return (
     <>
       <Disclosure as="nav" className="bg-gray-800">
@@ -230,25 +228,9 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
             <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white">
               {getPageTitle(path)}
             </h1>
-            {path == "/orders" && (
-              <button
-                type="button"
-                onClick={() => setIsAdd(true)}
-                className="rounded-full flex gap-2 items-center bg-indigo-600 p-3 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                შეკვეთის დამატება
-                <PlusIcon className="h-5 w-5" aria-hidden="true" />
-              </button>
-            )}
           </div>
         </header>
       </div>
-      {isAdd && (
-        <>
-          <AddOrder token={currentUser.token} />{" "}
-          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
-        </>
-      )}
     </>
   );
 }
