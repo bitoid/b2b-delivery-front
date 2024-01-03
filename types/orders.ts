@@ -8,6 +8,8 @@ interface ClientOrderType {
   item_price: number;
   courier_fee: number;
   status: string;
+  sum: string;
+  created_at: string;
 }
 
 export type { ClientOrderType };

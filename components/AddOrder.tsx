@@ -1,16 +1,43 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import React from "react";
 import ExcelForm from "./ExcelForm";
 import { useMarkedOrderStore } from "@/store/orders";
-import ManuallyForm from "./ManuallyForm";
+import OrderForm from "./OrderForm";
+import { ClientOrderType } from "@/types/orders";
+import { TableContext } from "./Table";
 
 export default function AddOrder({ token }: { token: string }) {
   const [manually, setManually] = useState(true);
   const { markedOrders } = useMarkedOrderStore();
-  console.log(markedOrders);
+
+  const onSubmit = async (data: ClientOrderType) => {
+    console.log({
+      ...data,
+      sum: Number(data.item_price) + Number(data.courier_fee),
+      status: "DF",
+    });
+    try {
+      const response = await fetch(`${process.env.API_URL}/orders/`, {
+        method: "POST",
+        body: JSON.stringify({
+          ...data,
+          sum: Number(data.item_price) + Number(data.courier_fee),
+          status: "DF",
+          client: 1,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${token}`,
+        },
+      });
+      console.log(response);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div className="bg-white shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
       <div className="flex gap-3 pl-7 pt-4">
@@ -35,7 +62,11 @@ export default function AddOrder({ token }: { token: string }) {
           ექსელით
         </button>
       </div>
-      {manually ? <ManuallyForm token={token} /> : <ExcelForm />}
+      {manually ? (
+        <OrderForm order={null} onSubmit={onSubmit} mode="add" />
+      ) : (
+        <ExcelForm />
+      )}
     </div>
   );
 }

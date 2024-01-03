@@ -40,8 +40,6 @@ select {
 
 #for-hide .ant-select-selection-item {
   background-color: transparent;
-
-  
 }
 
 #for-hide .ant-select-selection-item svg {
@@ -50,10 +48,8 @@ select {
 
 .ant-btn-sm {
   background-color: white;
-  color: gray
+  color: gray;
 }
-
-
 
 .ant-table-body::-webkit-scrollbar {
   width: 10px;
@@ -74,4 +70,9 @@ select {
 /* Handle on hover */
 .ant-table-body::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.ant-select .ant-select-selection-item {
+  color: white;
+  font-weight: 800;
 }

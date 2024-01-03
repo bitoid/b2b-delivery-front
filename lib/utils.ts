@@ -37,13 +37,15 @@ export function getDefaultFilter(storedQuery: string | null, key: string) {
 
 export function getColorForStatus(status: string) {
   switch (status) {
-    case "todo":
+    case "DF":
+      return "gray";
+    case "RD":
       return "red";
-    case "doing":
+    case "YL":
       return "orange";
-    case "done":
+    case "GR":
       return "green";
-    default:
+    case "BK":
       return "black";
   }
 }

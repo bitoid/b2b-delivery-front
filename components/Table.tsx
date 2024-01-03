@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import {
   Button,
   ConfigProvider,
@@ -28,6 +28,8 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { RestTwoTone } from "@ant-design/icons";
+import { Session } from "next-auth";
+import { UserType } from "@/types/user";
 
 interface CommentProps {
   text: string;
@@ -47,19 +49,35 @@ const Comment: React.FC<CommentProps> = ({ text }) => {
           {text}
         </span>
       ) : (
-        <span>{text.slice(0, 7)}...</span>
+        <span>{text.slice(0, 6)}...</span>
       )}
     </span>
   );
 };
+
+interface OrdersContextProps {
+  orders: ClientOrderType[];
+  user: UserType | undefined;
+  setOrders: React.Dispatch<React.SetStateAction<ClientOrderType[]>>;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const initialContext: OrdersContextProps = {
+  orders: [],
+  user: undefined,
+  setIsEdit: () => {},
+  setOrders: () => {},
+};
+
+export const TableContext = createContext<OrdersContextProps>(initialContext);
+
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   searchParams: any;
-  filteredData: ClientOrderType[];
-}> = ({ data, searchParams }) => {
+  user: UserType | undefined;
+}> = ({ data, searchParams, user }) => {
   let storedQuery = null;
   const router = useRouter();
-
   const [orders, setOrders] = useState<ClientOrderType[]>(data);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -194,9 +212,11 @@ const OrderTable: React.FC<{
       dataIndex: "status",
       width: "10%",
       filters: [
-        { text: "Todo", value: "todo" },
-        { text: "Doing", value: "doing" },
-        { text: "Done", value: "done" },
+        { text: "სტატუსის გარეშე", value: "DF" },
+        { text: "ჩაბარებულია", value: "GR" },
+        { text: "ჩაბარების პროცესშია", value: "YL" },
+        { text: "ვერ ჩაბარდა", value: "RD" },
+        { text: "დაბრუნებულია", value: "BK" },
       ],
       filteredValue: filteredInfo?.status || null,
       onFilter: (value, record) => {
@@ -211,19 +231,24 @@ const OrderTable: React.FC<{
                 optionSelectedBg: getColorForStatus(record.status),
                 optionSelectedColor: "white",
                 selectorBg: getColorForStatus(record.status),
+                borderRadius: 100,
               },
             },
           }}
         >
           <Select
             value={record.status}
-            className={`w-[80px]`}
+            className={`w-[120px]`}
+            dropdownStyle={{ width: "190px" }}
             onChange={(value) => handleStatusChange(record.id, value)}
-          >
-            <Select.Option value="todo">Todo</Select.Option>
-            <Select.Option value="doing">Doing</Select.Option>
-            <Select.Option value="done">Done</Select.Option>
-          </Select>
+            options={[
+              { label: "სტატუსის გარეშე", value: "DF" },
+              { label: "ჩაბარებულია", value: "GR" },
+              { label: "ჩაბარების პროცესშია", value: "YL" },
+              { label: "ვერ ჩაბარდა", value: "RD" },
+              { label: "დაბრუნებულია", value: "BK" },
+            ]}
+          />
         </ConfigProvider>
       ),
     },
@@ -503,15 +528,17 @@ const OrderTable: React.FC<{
         scroll={{ y: "50vh", x: 1400 }}
         className="custom-scroll "
         sticky={true}
-        rowSelection={rowSelection}
+        rowSelection={
+          user?.user_data.user_type != "client" ? rowSelection : undefined
+        }
         rowKey={(record: ClientOrderType) => record.id}
         pagination={{ pageSize: 10, current: defaultCurrent }}
       />
       {isEdit && editInfo && (
-        <>
+        <TableContext.Provider value={{ orders, setOrders, user, setIsEdit }}>
           <BlackScreen setIsBlackScreen={setIsEdit} isBlackScreen={isEdit} />
           <EditOrder order={editInfo} />
-        </>
+        </TableContext.Provider>
       )}
     </StyleProvider> //   <ConfigProvider
     //   theme={{
