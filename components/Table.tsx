@@ -27,7 +27,7 @@ import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
-import { RestTwoTone } from "@ant-design/icons";
+import { ClearOutlined } from "@ant-design/icons";
 import { Session } from "next-auth";
 import { UserType } from "@/types/user";
 
@@ -377,28 +377,22 @@ const OrderTable: React.FC<{
     },
     {
       title: () => (
-        <>
-          {/* <span
-            className="text-[#3b82f6] cursor-pointer hover:opacity-60"
-            onClick={() => {
-              localStorage.removeItem("query");
-              localStorage.removeItem("filters");
-              localStorage.removeItem("sorteds");
-              router.push("/orders?current=1&pageSize=10");
-              setQuery(searchParams);
-              setMinPrice(undefined);
-              setMaxPrice(undefined);
-              setFilteredInfo({});
-              setSortedInfo({});
-            }}
-          >
-            გასუფთავება
-          </span>
-          <RestTwoTone /> */}
-        </>
+        <ClearOutlined
+          onClick={() => {
+            localStorage.removeItem("query");
+            localStorage.removeItem("filters");
+            localStorage.removeItem("sorteds");
+            router.push("/orders?current=1&pageSize=10");
+            setQuery(searchParams);
+            setMinPrice(undefined);
+            setMaxPrice(undefined);
+            setFilteredInfo({});
+            setSortedInfo({});
+          }}
+        />
       ),
       dataIndex: "edit",
-      width: "6%",
+      width: "4%",
       render: (_text: string, record: ClientOrderType) => (
         <Button
           type="link"
