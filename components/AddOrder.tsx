@@ -29,8 +29,7 @@ export default function AddOrder({
       client: 1,
       created_at: new Date().toISOString(),
     };
-    setOrders([...orders, modifiedData]);
-    setIsAdd(false);
+
     try {
       const response = await fetch(`${process.env.API_URL}/orders/`, {
         method: "POST",
@@ -45,7 +44,7 @@ export default function AddOrder({
           Authorization: `Token ${token}`,
         },
       });
-      console.log(response);
+      window.location.reload();
     } catch (err) {
       console.error(err);
     }

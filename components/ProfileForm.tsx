@@ -13,14 +13,14 @@ export default function ProfileForm({ user }: { user: any }) {
           <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
             კომპანიის ინფორმაცია
           </h2>
-          <button
+          {/* <button
             type="button"
             className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={() => setIsEdit(true)}
           >
             განახლება
             <PencilIcon className="block w-6 h-6 company-icon" />
-          </button>
+          </button> */}
         </div>
 
         <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
@@ -107,20 +107,22 @@ export default function ProfileForm({ user }: { user: any }) {
         </dl>
       </div>
 
-      <div>
-        <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900 pb-2">
-          მისამართები
-        </h2>
+      {
+        <div>
+          <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900 pb-2">
+            მისამართები
+          </h2>
 
-        <div className="flex border-t border-gray-100 pt-6">
-          <button
-            type="button"
-            className="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 text-[17px]"
-          >
-            <span aria-hidden="true">+</span> მისამართის დამატება
-          </button>
+          <div className="flex border-t border-gray-100 pt-6">
+            <button
+              type="button"
+              className="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 text-[17px]"
+            >
+              <span aria-hidden="true">+</span> მისამართის დამატება
+            </button>
+          </div>
         </div>
-      </div>
+      }
       <div className="w-full flex justify-end mt-3 border-none text-xl h-4">
         {isEdit && (
           <button

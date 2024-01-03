@@ -1,9 +1,5 @@
 import { ClientOrderType } from "@/types/orders";
 import React, { useContext, useState } from "react";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { ConfigProvider, Input, Select } from "antd";
-import { getColorForStatus } from "@/lib/utils";
-import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "./Table";
 import OrderForm from "./OrderForm";
 
@@ -75,8 +71,7 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
     modifiedData.created_at = order.created_at;
 
     context.orders[context.orders.indexOf(order)] = modifiedData;
-    context.setOrders([...context.orders]);
-    context.setIsEdit(false);
+
     try {
       const response = await fetch(
         `${process.env.API_URL}/orders/${order.id}`,
@@ -89,7 +84,8 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
           body: JSON.stringify(modifiedData),
         }
       );
-
+      context.setOrders([...context.orders]);
+      context.setIsEdit(false);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

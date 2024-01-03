@@ -413,42 +413,56 @@ const OrderTable: React.FC<{
     getCheckboxProps: (record: ClientOrderType) => ({
       id: String(record.id),
     }),
-    selections: [
-      {
-        key: "delete",
-        text: "მონიშნული შეკვეთების წაშლა",
-        onSelect: () => {
-          console.log(selectedRowKeys);
-          try {
-            selectedRowKeys.forEach(async (id) => {
-              const response = await fetch(
-                `${process.env.API_URL}/orders/${id}`,
-                {
-                  method: "DELETE",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Token ${user?.token}`,
-                  },
-                }
-              );
-            });
+    selections:
+      user?.user_data.user_type == "admin"
+        ? [
+            {
+              key: "delete",
+              text: "მონიშნული შეკვეთების წაშლა",
+              onSelect: () => {
+                console.log(selectedRowKeys);
+                try {
+                  selectedRowKeys.forEach(async (id) => {
+                    const response = await fetch(
+                      `${process.env.API_URL}/orders/${id}`,
+                      {
+                        method: "DELETE",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Token ${user?.token}`,
+                        },
+                      }
+                    );
+                  });
 
-            setOrders((prevOrders) =>
-              prevOrders.filter((order) => !selectedRowKeys.includes(order.id))
-            );
-          } catch (error) {
-            console.error("Error:", error);
-          }
-        },
-      },
-      {
-        key: "send",
-        text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-        onSelect: () => {
-          // edRowKeys);
-        },
-      },
-    ],
+                  setOrders((prevOrders) =>
+                    prevOrders.filter(
+                      (order) => !selectedRowKeys.includes(order.id)
+                    )
+                  );
+                } catch (error) {
+                  console.error("Error:", error);
+                }
+              },
+            },
+
+            {
+              key: "send",
+              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
+              onSelect: () => {
+                // edRowKeys);
+              },
+            },
+          ]
+        : [
+            {
+              key: "send",
+              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
+              onSelect: () => {
+                // edRowKeys);
+              },
+            },
+          ],
   };
 
   //event handlers
@@ -578,13 +592,15 @@ const OrderTable: React.FC<{
         </TableContext.Provider>
       )}
 
-      <button
-        onClick={() => setIsAdd(true)}
-        className="mt-[-40px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
-      >
-        დამატება
-        <PlusIcon className="h-5 w-5" aria-hidden="true" />
-      </button>
+      {user?.user_data.user_type != "courier" && (
+        <button
+          onClick={() => setIsAdd(true)}
+          className="mt-[-40px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
+        >
+          დამატება
+          <PlusIcon className="h-5 w-5" aria-hidden="true" />
+        </button>
+      )}
       {isAdd && (
         <>
           <AddOrder

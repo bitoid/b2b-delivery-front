@@ -38,11 +38,11 @@ export default function OrderForm({
       }
       onSubmit={handleSubmit(onSubmit)}
     >
-      {mode == "edit" && context.user?.user_data.username == "admin" && (
-        <div className=" px-4 sm:px-0 flex justify-between">
-          <h3 className="text-base font-semibold leading-7 text-gray-900">
-            შეკვეთის დეტალები
-          </h3>
+      <div className=" px-4 sm:px-0 flex justify-between">
+        <h3 className="text-base font-semibold leading-7 text-gray-900">
+          შეკვეთის დეტალები
+        </h3>
+        {mode == "edit" && context.user?.user_data.username == "admin" && (
           <button
             type="button"
             className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -51,8 +51,9 @@ export default function OrderForm({
             შეკვეთის წაშლა
             <TrashIcon className="block w-6 h-6" />
           </button>
-        </div>
-      )}
+        )}
+      </div>
+
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
         <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
           <div className="sm:col-span-3">
@@ -129,7 +130,7 @@ export default function OrderForm({
             </label>
             <div className="mt-2">
               <textarea
-                {...register("comment", { required: true })}
+                {...register("comment", { required: false })}
                 defaultValue={mode == "edit" ? order?.comment : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
