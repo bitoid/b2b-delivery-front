@@ -417,7 +417,29 @@ const OrderTable: React.FC<{
       {
         key: "delete",
         text: "მონიშნული შეკვეთების წაშლა",
-        onSelect: () => {},
+        onSelect: () => {
+          console.log(selectedRowKeys);
+          try {
+            selectedRowKeys.forEach(async (id) => {
+              const response = await fetch(
+                `${process.env.API_URL}/orders/${id}`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Token ${user?.token}`,
+                  },
+                }
+              );
+            });
+
+            setOrders((prevOrders) =>
+              prevOrders.filter((order) => !selectedRowKeys.includes(order.id))
+            );
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        },
       },
       {
         key: "send",
