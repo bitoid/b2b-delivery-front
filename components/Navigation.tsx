@@ -49,7 +49,7 @@ export default function Navigation({
       <Disclosure as="nav" className="bg-gray-800">
         {({ open }) => (
           <>
-            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="mx-auto  sm:px-6 lg:px-8">
               <div className="border-b border-gray-700">
                 <div className="flex h-16 items-center justify-between px-4 sm:px-0">
                   <div className="flex items-center">
@@ -218,9 +218,9 @@ export default function Navigation({
       </Disclosure>
 
       <div className="bg-gray-800 pb-32">
-        <header className="py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-between">
-            <h1 className="text-xl sm:text-3xl font-bold tracking-tight text-white">
+        <header className="py-5">
+          <div className="mx-auto  px-4 sm:px-6 lg:px-8 flex justify-between">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
               {getPageTitle(path)}
             </h1>
           </div>

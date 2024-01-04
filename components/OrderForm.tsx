@@ -1,10 +1,11 @@
 import { getColorForStatus } from "@/lib/utils";
 import { ClientOrderType } from "@/types/orders";
 import { ConfigProvider, Select } from "antd";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "./Table";
 import { TrashIcon } from "@heroicons/react/20/solid";
+import { userAgent } from "next/server";
 
 export default function OrderForm({
   order,
@@ -23,10 +24,23 @@ export default function OrderForm({
     watch,
     control,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<ClientOrderType>({
     defaultValues: { status: mode == "add" ? "DF" : order?.status },
   });
+
+  useEffect(() => {
+    order?.status && setValue("status", order?.status);
+    order?.address && setValue("address", order?.address);
+    order?.city && setValue("city", order?.city);
+    order?.comment && setValue("comment", order?.comment);
+    order?.courier_fee && setValue("courier_fee", order?.courier_fee);
+    order?.item_price && setValue("item_price", order?.item_price);
+    order?.phone_number && setValue("phone_number", order?.phone_number);
+    order?.addressee_full_name &&
+      setValue("addressee_full_name", order?.addressee_full_name);
+  }, []);
 
   const context = useContext(TableContext);
   return (
@@ -67,6 +81,7 @@ export default function OrderForm({
               <input
                 {...register("addressee_full_name", { required: true })}
                 defaultValue={mode == "edit" ? order?.addressee_full_name : ""}
+                disabled={context.user?.user_data.user_type == "courier"}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -83,6 +98,7 @@ export default function OrderForm({
                 {...register("city", { required: true })}
                 defaultValue={mode == "edit" ? order?.city : ""}
                 className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                disabled={context.user?.user_data.user_type == "courier"}
               >
                 <option>თბილისი</option>
                 <option>ბათუმი</option>
@@ -102,6 +118,7 @@ export default function OrderForm({
                 {...register("address", { required: true })}
                 defaultValue={mode == "edit" ? order?.address : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                disabled={context.user?.user_data.user_type == "courier"}
               />
             </div>
           </div>
@@ -117,6 +134,7 @@ export default function OrderForm({
                 {...register("phone_number", { required: true })}
                 defaultValue={mode == "edit" ? order?.phone_number : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                disabled={context.user?.user_data.user_type == "courier"}
               />
             </div>
           </div>
@@ -214,7 +232,7 @@ export default function OrderForm({
               </p>
             </div>
           </div>
-          {mode == "edit" && (
+          {mode == "edit" && context.user?.user_data.user_type != "client" && (
             <div className="sm:col-span-3">
               <label
                 htmlFor="postal-code"

@@ -18,9 +18,8 @@ import {
 import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
-import EditOrder from "./EditOrder";
+import EditOrder, { DeleteModal } from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
-import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
@@ -88,11 +87,11 @@ const OrderTable: React.FC<{
       ? queryString.parse(storedQuery, { arrayFormat: "comma" })
       : searchParams
   );
+  const [isDelete, setIsDelete] = useState<boolean>(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filteredInfo, setFilteredInfo] =
     useState<Record<string, FilterValue | null>>();
   const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>();
-  const pathName = usePathname();
   useEffect(() => {
     let storedQuery = localStorage.getItem("query");
     setFilteredInfo(
@@ -159,19 +158,18 @@ const OrderTable: React.FC<{
       title: "ქალაქი",
       dataIndex: "city",
       filters: getUniques(data, "city"),
-      filterMode: "tree",
+
       filterSearch: true,
       filteredValue: filteredInfo?.city || null,
 
       defaultFilteredValue: getDefaultFilter(storedQuery, "city"),
       onFilter: (value, record) => record.city.includes(value as string),
-      width: "9%",
+      width: "8%",
     },
     {
       title: "სახელი და გვარი",
       dataIndex: "addressee_full_name",
       filters: getUniques(data, "addressee_full_name"),
-      filterMode: "tree",
       filterSearch: true,
       filteredValue: filteredInfo?.addressee_full_name || null,
       defaultFilteredValue: getDefaultFilter(
@@ -186,7 +184,6 @@ const OrderTable: React.FC<{
       title: "მისამართი",
       dataIndex: "address",
       filters: getUniques(data, "address"),
-      filterMode: "tree",
       filterSearch: true,
       filteredValue: filteredInfo?.address || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
@@ -197,7 +194,6 @@ const OrderTable: React.FC<{
       title: "ტელეფონი",
       dataIndex: "phone_number",
       filters: getUniques(data, "phone_number"),
-      filterMode: "tree",
       filterSearch: true,
       filteredValue: filteredInfo?.phone_number || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "phone_number"),
@@ -213,6 +209,7 @@ const OrderTable: React.FC<{
       filteredValue: filteredInfo?.comment || null,
       render: (text: string) => <Comment text={text} />,
     },
+
     {
       title: "სტატუსი",
       dataIndex: "status",
@@ -228,7 +225,6 @@ const OrderTable: React.FC<{
       onFilter: (value, record) => {
         return record.status === value;
       },
-      filterMode: "tree",
       render: (text, record) => (
         <ConfigProvider
           theme={{
@@ -372,12 +368,11 @@ const OrderTable: React.FC<{
       title: "თარიღი",
       dataIndex: "created_at",
       filters: getUniques(data, "created_at"),
-      filterMode: "tree",
       filterSearch: true,
       filteredValue: filteredInfo?.created_at || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
       onFilter: (value, record) => record.created_at.includes(value as string),
-      width: "9%",
+      width: "8%",
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
     },
     {
@@ -397,19 +392,23 @@ const OrderTable: React.FC<{
         />
       ),
       dataIndex: "edit",
-      width: "4%",
+      width: "3.5%",
       render: (_text: string, record: ClientOrderType) => (
         <Button
           type="link"
           onClick={() => handleEditClick(record)}
           icon={<EditFilled />}
-          className="ml-auto block"
+          className="ml-[-15px]"
         >
           {" "}
         </Button>
       ),
     },
   ];
+
+  if (user?.user_data.user_type == "client") {
+    columns.splice(5, 1);
+  }
   const rowSelection: TableRowSelection<ClientOrderType> = {
     selectedRowKeys,
     onChange: onSelectChange,
@@ -422,28 +421,8 @@ const OrderTable: React.FC<{
             {
               key: "delete",
               text: "მონიშნული შეკვეთების წაშლა",
-              onSelect: async () => {
-                try {
-                  const response = await fetch(
-                    `${process.env.API_URL}/orders/delete-batch/`,
-                    {
-                      method: "DELETE",
-                      body: JSON.stringify({ ids: selectedRowKeys }),
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Token ${user?.token}`,
-                      },
-                    }
-                  );
-
-                  setOrders((prevOrders) =>
-                    prevOrders.filter(
-                      (order) => !selectedRowKeys.includes(order.id)
-                    )
-                  );
-                } catch (error) {
-                  console.error("Error:", error);
-                }
+              onSelect: () => {
+                setIsDelete(true);
               },
             },
 
@@ -477,13 +456,13 @@ const OrderTable: React.FC<{
         },
         body: JSON.stringify({ status: value }),
       });
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order.id === key ? { ...order, status: value } : order
-        )
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+
+      if (response.ok) {
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === key ? { ...order, status: value } : order
+          )
+        );
       }
 
       const data = await response.json();
@@ -500,8 +479,7 @@ const OrderTable: React.FC<{
   const onChange: TableProps<ClientOrderType>["onChange"] = (
     pagination,
     filters,
-    sorter,
-    extra
+    sorter
   ) => {
     setDefaultCurrent(pagination.current as number);
     setFilteredInfo(filters);
@@ -569,14 +547,39 @@ const OrderTable: React.FC<{
     setSelectedRowKeys(selectedRowIds);
   }
 
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.API_URL}/orders/delete-batch/`,
+        {
+          method: "DELETE",
+          body: JSON.stringify({ ids: selectedRowKeys }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${user?.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => !selectedRowKeys.includes(order.id))
+        );
+        setIsDelete(false);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <StyleProvider cache={cache}>
       <Table
         columns={columns}
         dataSource={orders}
         onChange={onChange}
-        scroll={{ y: "50vh", x: 1400 }}
-        className="custom-scroll "
+        scroll={{ y: "60vh", x: 1600 }}
+        className="custom-scroll"
         sticky={true}
         rowSelection={
           user?.user_data.user_type != "client" ? rowSelection : undefined
@@ -594,7 +597,7 @@ const OrderTable: React.FC<{
       {user?.user_data.user_type != "courier" && (
         <button
           onClick={() => setIsAdd(true)}
-          className="mt-[-40px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
+          className="mt-[-50px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
         >
           დამატება
           <PlusIcon className="h-5 w-5" aria-hidden="true" />
@@ -609,6 +612,12 @@ const OrderTable: React.FC<{
             setIsAdd={setIsAdd}
           />{" "}
           <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
+        </>
+      )}
+      {isDelete && (
+        <>
+          <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
+          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsDelete} />
         </>
       )}
     </StyleProvider>

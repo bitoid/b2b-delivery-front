@@ -11,6 +11,7 @@ export default function AddOrder({
   user,
   setOrders,
   orders,
+  setIsAdd,
 }: {
   user: UserType | undefined;
   setOrders: (orders: ClientOrderType[]) => void;
@@ -38,9 +39,11 @@ export default function AddOrder({
           Authorization: `Token ${user?.token}`,
         },
       });
-      console.log(modifiedData);
-      setOrders([...orders, modifiedData]);
-      // window.location.reload();
+      const newOrder = await response.json();
+      if (response.ok) {
+        setOrders([...orders, newOrder]);
+        setIsAdd(false);
+      }
     } catch (err) {
       console.error(err);
     }

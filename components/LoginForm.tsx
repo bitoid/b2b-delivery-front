@@ -15,7 +15,7 @@ export default function LoginPage() {
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    const signIns = await signIn("credentials", {
+    await signIn("credentials", {
       username: data.username,
       password: data.password,
       callbackUrl: "/orders",

@@ -21,11 +21,7 @@ export default async function OrdersPage({
 
   const orders: ClientOrderType[] = await getOrders(user?.token);
   console.log(orders);
-  return (
-    <>
-      <OrderTable data={orders} searchParams={searchParams} user={user} />
-    </>
-  );
+  return <OrderTable data={orders} searchParams={searchParams} user={user} />;
 }
 
 const getOrders = async (token: string | undefined) => {

@@ -3,38 +3,13 @@ import React, { useContext, useState } from "react";
 import { TableContext } from "./Table";
 import OrderForm from "./OrderForm";
 
-const DeleteModal = ({
+export const DeleteModal = ({
   setIsDelete,
-  id,
+  handleDelete,
 }: {
   setIsDelete: (isDelete: boolean) => void;
-  id: number;
+  handleDelete: () => void;
 }) => {
-  const context = useContext(TableContext);
-  const handleDelete = async () => {
-    const order = context.orders.find((order) => order.id === id);
-    if (order) {
-      context.orders.splice(context.orders.indexOf(order), 1);
-      context.setOrders([...context.orders]);
-    }
-    context.setIsEdit(false);
-    try {
-      const response = await fetch(`${process.env.API_URL}/orders/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Token ${context.user?.token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
   return (
     <div className="fixed z-30 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[300px] rounded-[10px]">
       <p className="text-black">ნამდვილად გსურთ წაშლა?</p>
@@ -59,7 +34,30 @@ const DeleteModal = ({
 export default function EditOrder({ order }: { order: ClientOrderType }) {
   const context = useContext(TableContext);
   const [isDelete, setIsDelete] = useState(false);
+  const handleDelete = async () => {
+    const deletedOrder = context.orders.find((item) => item.id == order.id);
+    try {
+      const response = await fetch(
+        `${process.env.API_URL}/orders/${order.id}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Token ${context.user?.token}`,
+          },
+        }
+      );
 
+      if (response.ok) {
+        deletedOrder &&
+          context.orders.splice(context.orders.indexOf(deletedOrder), 1);
+
+        context.setOrders([...context.orders]);
+        context.setIsEdit(false);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   const onSubmit = async (data: ClientOrderType) => {
     const modifiedData = { ...data };
     if (context.user?.user_data.user_type != "admin") {
@@ -69,8 +67,6 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
     }
 
     modifiedData.created_at = order.created_at;
-
-    context.orders[context.orders.indexOf(order)] = modifiedData;
 
     try {
       const response = await fetch(
@@ -84,20 +80,19 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
           body: JSON.stringify(modifiedData),
         }
       );
-      context.setOrders([...context.orders]);
-      context.setIsEdit(false);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const editedOrder = await response.json();
+      if (response.ok) {
+        context.orders[context.orders.indexOf(order)] = editedOrder;
+        context.setOrders([...context.orders]);
+        context.setIsEdit(false);
       }
-
-      const data = await response.json();
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
   return isDelete ? (
-    <DeleteModal setIsDelete={setIsDelete} id={order.id} />
+    <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
   ) : (
     <OrderForm
       onSubmit={onSubmit}
