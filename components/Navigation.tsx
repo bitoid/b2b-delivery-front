@@ -14,14 +14,19 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 import { signOut } from "next-auth/react";
-export default function Navigation({ currentUser }: { currentUser: any }) {
+import { UserType } from "@/types/user";
+export default function Navigation({
+  currentUser,
+}: {
+  currentUser: UserType | undefined;
+}) {
   const navigation = currentUser
     ? [
         { name: "გაგზავნილი შეკვეთები", href: "/orders" },
         { name: "პროფილი", href: "/profile" },
       ]
     : [];
-  if (currentUser.user_data.user_type == "admin") {
+  if (currentUser?.user_data.user_type == "admin") {
     navigation.push({ name: "მომხმარებლის დამატება", href: "/add-user" });
   }
   const userNavigation = [{ name: "სისტემიდან გასვლა", href: "" }];
@@ -35,14 +40,6 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
       default:
         return "";
     }
-  };
-  const user = {
-    name:
-      currentUser.user_data.user_type == "admin"
-        ? currentUser.user_data.profile
-        : currentUser.user_data.profile.name,
-    email: currentUser.user_data.email,
-    user_type: currentUser.user_data.user_type,
   };
 
   const path = usePathname();
@@ -94,8 +91,10 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
                         <div>
                           <Menu.Button className="relative flex max-w-xs items-center rounded-full bg-gray-800 text-sm  ">
                             <div className="flex gap-[5px] p-1  hover:opacity-80">
-                              <span className="text-white fo">{user.name}</span>
-                              {user.user_type == "client" ? (
+                              <span className="text-white fo">
+                                {currentUser?.user_data.profile.name}
+                              </span>
+                              {currentUser?.user_data.user_type == "client" ? (
                                 <BuildingOffice2Icon className="block w-6 h-6 company-logo" />
                               ) : (
                                 <UserIcon className="block w-6 h-6 company-logo" />
@@ -185,10 +184,10 @@ export default function Navigation({ currentUser }: { currentUser: any }) {
                   </div>
                   <div className="ml-3">
                     <div className="text-base font-medium leading-none text-white">
-                      {user.name}
+                      {currentUser?.user_data.profile.name}
                     </div>
                     <div className="text-sm font-medium leading-none text-gray-400">
-                      {user.email}
+                      {currentUser?.user_data.profile.email}
                     </div>
                   </div>
                   <button

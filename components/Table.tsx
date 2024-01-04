@@ -20,7 +20,7 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
-
+import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
@@ -71,6 +71,7 @@ const OrderTable: React.FC<{
   user: UserType | undefined;
 }> = ({ data, searchParams, user }) => {
   let storedQuery = null;
+  let page;
   const router = useRouter();
   const [orders, setOrders] = useState<ClientOrderType[]>(data);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
@@ -91,7 +92,7 @@ const OrderTable: React.FC<{
   const [filteredInfo, setFilteredInfo] =
     useState<Record<string, FilterValue | null>>();
   const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>();
-
+  const pathName = usePathname();
   useEffect(() => {
     let storedQuery = localStorage.getItem("query");
     setFilteredInfo(
@@ -104,6 +105,15 @@ const OrderTable: React.FC<{
         ? JSON.parse(window.localStorage.getItem("sorteds") || "")
         : {}
     );
+    if (storedQuery) {
+      setDefaultCurrent(
+        Number(
+          queryString.parse(storedQuery, { arrayFormat: "comma" })
+            .current as unknown
+        )
+      );
+    }
+
     if (query["item_price"]?.split("to")[0])
       setMinPrice(query["item_price"]?.split("to")[0]);
 
@@ -113,17 +123,18 @@ const OrderTable: React.FC<{
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
     }
+    page = searchParams["current"];
     if (storedQuery) {
       router.push(`/orders?${storedQuery}`);
       setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
     }
+
+    // setDefaultCurrent(
+    //   Number(queryString.parse(localStorage.getItem("query") || "{}").current)
+    // );
   }, []);
 
-  const parsedCurrent =
-    storedQuery &&
-    queryString.parse(storedQuery, { arrayFormat: "comma" }).current;
-  const defaultCurrent =
-    parsedCurrent !== null ? parseInt(parsedCurrent as string) : 1;
+  const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   //optimezed antd for nextjs
   const cache = React.useMemo<Entity>(() => createCache(), []);
@@ -411,20 +422,19 @@ const OrderTable: React.FC<{
             {
               key: "delete",
               text: "მონიშნული შეკვეთების წაშლა",
-              onSelect: () => {
+              onSelect: async () => {
                 try {
-                  selectedRowKeys.forEach(async (id) => {
-                    const response = await fetch(
-                      `${process.env.API_URL}/orders/${id}`,
-                      {
-                        method: "DELETE",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Token ${user?.token}`,
-                        },
-                      }
-                    );
-                  });
+                  const response = await fetch(
+                    `${process.env.API_URL}/orders/delete-batch/`,
+                    {
+                      method: "DELETE",
+                      body: JSON.stringify({ ids: selectedRowKeys }),
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Token ${user?.token}`,
+                      },
+                    }
+                  );
 
                   setOrders((prevOrders) =>
                     prevOrders.filter(
@@ -458,12 +468,6 @@ const OrderTable: React.FC<{
 
   //event handlers
   const handleStatusChange = async (key: number, value: string) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === key ? { ...order, status: value } : order
-      )
-    );
-
     try {
       const response = await fetch(`${process.env.API_URL}/orders/${key}`, {
         method: "PATCH",
@@ -473,7 +477,11 @@ const OrderTable: React.FC<{
         },
         body: JSON.stringify({ status: value }),
       });
-
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === key ? { ...order, status: value } : order
+        )
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -495,7 +503,7 @@ const OrderTable: React.FC<{
     sorter,
     extra
   ) => {
-    // s", pagination, filters, sorter, extra);
+    setDefaultCurrent(pagination.current as number);
     setFilteredInfo(filters);
     setSortedInfo(
       sorter as SorterResult<{ item_price: number; courierPrice: number }>
@@ -574,7 +582,7 @@ const OrderTable: React.FC<{
           user?.user_data.user_type != "client" ? rowSelection : undefined
         }
         rowKey={(record: ClientOrderType) => record.id}
-        pagination={{ pageSize: 10, current: defaultCurrent }}
+        pagination={{ pageSize: 10, current: defaultCurrent as number }}
       />
       {isEdit && editInfo && (
         <TableContext.Provider value={{ orders, setOrders, user, setIsEdit }}>

@@ -1,19 +1,22 @@
 "use client";
 import { useState } from "react";
 import { PencilIcon } from "@heroicons/react/24/outline";
+import { UserType } from "@/types/user";
 
-export default function ProfileForm({ user }: { user: any }) {
+export default function ProfileForm({ user }: { user: UserType | undefined }) {
   const [isEdit, setIsEdit] = useState(false);
 
-  console.log(user);
+  const userProfile = user?.user_data.profile;
   return (
     <div className="mx-auto max-w-2xl space-y-16 lg:mx-0 lg:max-w-none">
-      <div>
-        <div className="flex justify-between">
-          <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
-            კომპანიის ინფორმაცია
-          </h2>
-          {/* <button
+      {user?.user_data.user_type == "client" && (
+        <div>
+          <div className="flex justify-between">
+            <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
+              კომპანიის ინფორმაცია
+            </h2>
+
+            {/* <button
             type="button"
             className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={() => setIsEdit(true)}
@@ -21,31 +24,34 @@ export default function ProfileForm({ user }: { user: any }) {
             განახლება
             <PencilIcon className="block w-6 h-6 company-icon" />
           </button> */}
-        </div>
-
-        <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-          <div className="pt-6 sm:flex">
-            <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-              დასახელება
-            </dt>
-            <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-              <input
-                type="text"
-                name="company"
-                id="company"
-                autoComplete="given-name"
-                disabled={!isEdit}
-                defaultValue={user.name}
-                className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-              />
-            </dd>
           </div>
-        </dl>
-      </div>
+
+          <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
+            <div className="pt-6 sm:flex">
+              <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                დასახელება
+              </dt>
+              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+                <input
+                  type="text"
+                  name="company"
+                  id="company"
+                  autoComplete="given-name"
+                  disabled={!isEdit}
+                  defaultValue={userProfile?.name}
+                  className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
+                />
+              </dd>
+            </div>
+          </dl>
+        </div>
+      )}
 
       <div>
         <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
-          საკონტაქტო პირის ინფორმაცია
+          {user?.user_data.user_type == "client"
+            ? "საკონტაქტო პირის ინფორმაცია"
+            : "პირადი ინფორმაცია"}
         </h2>
 
         <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
@@ -60,7 +66,11 @@ export default function ProfileForm({ user }: { user: any }) {
                 id="first-name"
                 autoComplete="given-name"
                 disabled={!isEdit}
-                defaultValue={user.representative_full_name}
+                defaultValue={
+                  user?.user_data.user_type == "client"
+                    ? userProfile?.representative_full_name
+                    : userProfile?.name
+                }
                 className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
               />
             </dd>
@@ -79,7 +89,7 @@ export default function ProfileForm({ user }: { user: any }) {
                     id="email"
                     autoComplete="given-name"
                     disabled={!isEdit}
-                    defaultValue={user.email}
+                    defaultValue={userProfile?.email}
                     className="block w-[100%] max-w-[350px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
                   />
                 </dd>
@@ -96,7 +106,7 @@ export default function ProfileForm({ user }: { user: any }) {
                       id="number"
                       autoComplete="given-name"
                       disabled={!isEdit}
-                      defaultValue={user.phone_number}
+                      defaultValue={userProfile?.phone_number}
                       className="block w-[250px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
                     />
                   </dd>
@@ -107,7 +117,7 @@ export default function ProfileForm({ user }: { user: any }) {
         </dl>
       </div>
 
-      {
+      {user?.user_data.user_type == "client" && (
         <div>
           <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900 pb-2">
             მისამართები
@@ -122,7 +132,7 @@ export default function ProfileForm({ user }: { user: any }) {
             </button>
           </div>
         </div>
-      }
+      )}
       <div className="w-full flex justify-end mt-3 border-none text-xl h-4">
         {isEdit && (
           <button

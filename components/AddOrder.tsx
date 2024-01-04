@@ -4,16 +4,13 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import React from "react";
 import ExcelForm from "./ExcelForm";
-
 import OrderForm from "./OrderForm";
 import { ClientOrderType } from "@/types/orders";
 import { UserType } from "@/types/user";
-
 export default function AddOrder({
   user,
   setOrders,
   orders,
-  setIsAdd,
 }: {
   user: UserType | undefined;
   setOrders: (orders: ClientOrderType[]) => void;
@@ -27,7 +24,8 @@ export default function AddOrder({
       ...data,
       sum: Number(data.item_price) + Number(data.courier_fee),
       status: "DF",
-      client: 1,
+      client: user?.user_data.profile.id || 1,
+      courier: null,
       created_at: new Date().toISOString(),
     };
 
@@ -40,8 +38,9 @@ export default function AddOrder({
           Authorization: `Token ${user?.token}`,
         },
       });
+      console.log(modifiedData);
       setOrders([...orders, modifiedData]);
-      window.location.reload();
+      // window.location.reload();
     } catch (err) {
       console.error(err);
     }
