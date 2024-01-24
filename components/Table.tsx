@@ -266,7 +266,8 @@ const OrderTable: React.FC<{
       width: "140px",
       filters: getUniques(data, "addressee_full_name"),
       filterSearch: true,
-      filteredValue: filteredInfo?.addressee_full_name || null,
+      filtered: searchParams["addressee_full_name"],
+      filteredValue: searchParams["addressee_full_name"].split(","),
       defaultFilteredValue: getDefaultFilter(
         storedQuery,
         "addressee_full_name"
