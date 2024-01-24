@@ -49,7 +49,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-
+import dayjs from "dayjs";
 interface CommentProps {
   text: string;
 }
@@ -192,17 +192,20 @@ const OrderTable: React.FC<{
       );
     }
 
-    if (query["item_price"]?.split("to")[0])
-      setMinPrice(query["item_price"]?.split("to")[0]);
+    let modifiedQuery: any = queryString.parse(storedQuery || "", {
+      arrayFormat: "comma",
+    });
+    if (modifiedQuery["item_price"]?.split("to")[0])
+      setMinPrice(modifiedQuery["item_price"]?.split("to")[0]);
 
-    if (query["item_price"]?.split("to")[1])
-      setMaxPrice(query["item_price"]?.split("to")[1]);
+    if (modifiedQuery["item_price"]?.split("to")[1])
+      setMaxPrice(modifiedQuery["item_price"]?.split("to")[1]);
 
-    if (query["created_at"]?.split("to")[0])
-      setStartDate(query["created_at"]?.split("to")[0]);
+    if (modifiedQuery["created_at"]?.split("to")[0])
+      setStartDate(modifiedQuery["created_at"]?.split("to")[0]);
 
-    if (query["created_at"]?.split("to")[1])
-      setEndDate(query["created_at"]?.split("to")[1]);
+    if (modifiedQuery["created_at"]?.split("to")[1])
+      setEndDate(modifiedQuery["created_at"]?.split("to")[1]);
 
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
@@ -218,6 +221,7 @@ const OrderTable: React.FC<{
     // );
   }, []);
 
+  console.log(minPrice);
   const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   //optimezed antd for nextjs
@@ -461,6 +465,9 @@ const OrderTable: React.FC<{
     {
       title: "თარიღი",
       dataIndex: "created_at",
+      sorter: (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sortOrder: sortedInfo?.field === "created_at" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -468,7 +475,6 @@ const OrderTable: React.FC<{
           ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
               .order as SortOrder)
           : undefined,
-      defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
       filteredValue: filteredInfo?.created_at || null,
       width: "120px",
       onFilter: (value, record) => {
@@ -496,7 +502,11 @@ const OrderTable: React.FC<{
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
       filterDropdown: ({ setSelectedKeys, confirm }) => (
         <div className="flex flex-col  p-2">
-          <RangePicker format="YYYY-MM-DD" onChange={onDateChange} />
+          <RangePicker
+            format="YYYY-MM-DD"
+            onChange={onDateChange}
+            defaultValue={[dayjs(startDate), dayjs(endDate)]}
+          />
 
           <Button
             type="primary"
