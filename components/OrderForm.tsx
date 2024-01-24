@@ -5,7 +5,7 @@ import { useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "./Table";
 import { TrashIcon } from "@heroicons/react/20/solid";
-import { userAgent } from "next/server";
+import InputMask from "react-input-mask";
 
 export default function OrderForm({
   order,
@@ -27,20 +27,17 @@ export default function OrderForm({
     setValue,
     formState: { errors },
   } = useForm<ClientOrderType>({
-    defaultValues: { status: mode == "add" ? "DF" : order?.status },
+    defaultValues: {
+      status: mode == "add" ? "DF" : order?.status,
+      address: order?.address,
+      city: order?.city,
+      comment: order?.comment,
+      courier_fee: order?.courier_fee,
+      item_price: order?.item_price,
+      phone_number: order?.phone_number,
+      addressee_full_name: order?.addressee_full_name,
+    },
   });
-
-  useEffect(() => {
-    order?.status && setValue("status", order?.status);
-    order?.address && setValue("address", order?.address);
-    order?.city && setValue("city", order?.city);
-    order?.comment && setValue("comment", order?.comment);
-    order?.courier_fee && setValue("courier_fee", order?.courier_fee);
-    order?.item_price && setValue("item_price", order?.item_price);
-    order?.phone_number && setValue("phone_number", order?.phone_number);
-    order?.addressee_full_name &&
-      setValue("addressee_full_name", order?.addressee_full_name);
-  }, []);
 
   const context = useContext(TableContext);
   return (
@@ -80,7 +77,6 @@ export default function OrderForm({
             <div className="mt-2">
               <input
                 {...register("addressee_full_name", { required: true })}
-                defaultValue={mode == "edit" ? order?.addressee_full_name : ""}
                 disabled={context.user?.user_data.user_type == "courier"}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -96,7 +92,6 @@ export default function OrderForm({
             <div className="mt-2">
               <select
                 {...register("city", { required: true })}
-                defaultValue={mode == "edit" ? order?.city : ""}
                 className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 disabled={context.user?.user_data.user_type == "courier"}
               >
@@ -116,7 +111,6 @@ export default function OrderForm({
             <div className="mt-2">
               <input
                 {...register("address", { required: true })}
-                defaultValue={mode == "edit" ? order?.address : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 disabled={context.user?.user_data.user_type == "courier"}
               />
@@ -130,9 +124,10 @@ export default function OrderForm({
               ტელეფონის ნომერი
             </label>
             <div className="mt-2">
-              <input
+              <InputMask
+                mask={"999 99 99 99"}
+                maskChar={null}
                 {...register("phone_number", { required: true })}
-                defaultValue={mode == "edit" ? order?.phone_number : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 disabled={context.user?.user_data.user_type == "courier"}
               />
@@ -149,7 +144,6 @@ export default function OrderForm({
             <div className="mt-2">
               <textarea
                 {...register("comment", { required: false })}
-                defaultValue={mode == "edit" ? order?.comment : ""}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -167,7 +161,6 @@ export default function OrderForm({
                 context.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("item_price", { required: true })}
-                    defaultValue={mode == "edit" ? order?.item_price : ""}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 ) : (
@@ -176,7 +169,6 @@ export default function OrderForm({
               ) : (
                 <input
                   {...register("item_price", { required: true })}
-                  defaultValue={order?.item_price}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               )}
@@ -195,7 +187,6 @@ export default function OrderForm({
                 context.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("courier_fee", { required: true })}
-                    defaultValue={mode == "edit" ? order?.courier_fee : ""}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 ) : (
@@ -204,7 +195,6 @@ export default function OrderForm({
               ) : (
                 <input
                   {...register("courier_fee", { required: true })}
-                  defaultValue={order?.courier_fee}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               )}
@@ -254,7 +244,6 @@ export default function OrderForm({
                 <Controller
                   name="status"
                   control={control}
-                  defaultValue={mode == "edit" ? order?.status : ""}
                   render={({ field }) => (
                     <Select
                       className={`w-[80px]`}

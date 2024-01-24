@@ -1,7 +1,7 @@
 interface ClientOrderType {
   sum: number;
   status: string;
-  client?: number;
+  client: number | null;
   id: number;
   city: string;
   addressee_full_name: string;

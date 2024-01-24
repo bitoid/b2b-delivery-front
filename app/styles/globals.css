@@ -75,3 +75,7 @@ select {
 .ant-select .ant-select-selection-item {
   color: white;
 }
+
+.ant-table-placeholder {
+  display: none;
+}

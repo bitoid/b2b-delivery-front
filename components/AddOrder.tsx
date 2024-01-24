@@ -7,6 +7,7 @@ import ExcelForm from "./ExcelForm";
 import OrderForm from "./OrderForm";
 import { ClientOrderType } from "@/types/orders";
 import { UserType } from "@/types/user";
+
 export default function AddOrder({
   user,
   setOrders,
@@ -40,6 +41,8 @@ export default function AddOrder({
         },
       });
       const newOrder = await response.json();
+
+      console.log(response);
       if (response.ok) {
         setOrders([...orders, newOrder]);
         setIsAdd(false);
@@ -75,7 +78,7 @@ export default function AddOrder({
       {manually ? (
         <OrderForm order={null} onSubmit={onSubmit} mode="add" />
       ) : (
-        <ExcelForm />
+        <ExcelForm token={user?.token} />
       )}
     </div>
   );

@@ -1,7 +1,17 @@
 "use client";
 
 import React, { createContext, useEffect, useState } from "react";
-import { Button, ConfigProvider, Input, Select, Space, Table } from "antd";
+import {
+  Button,
+  ConfigProvider,
+  Input,
+  Select,
+  Space,
+  Table,
+  DatePicker,
+  DatePickerProps,
+  Typography,
+} from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/orders";
 import { getUniques, getDefaultFilter, getColorForStatus } from "@/lib/utils";
@@ -19,10 +29,26 @@ import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
-import { ClearOutlined } from "@ant-design/icons";
+import { ClearOutlined, MenuOutlined } from "@ant-design/icons";
 import { UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
+import { RangePickerProps } from "antd/es/date-picker";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface CommentProps {
   text: string;
@@ -64,6 +90,50 @@ const initialContext: OrdersContextProps = {
 
 export const TableContext = createContext<OrdersContextProps>(initialContext);
 
+interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
+  "data-row-key": string;
+}
+
+const Row = ({ children, ...props }: RowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props["data-row-key"],
+  });
+
+  const style: React.CSSProperties = {
+    ...props.style,
+    transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
+    transition,
+    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
+  };
+
+  return (
+    <tr {...props} ref={setNodeRef} style={style} {...attributes}>
+      {React.Children.map(children, (child) => {
+        if ((child as React.ReactElement).key === "sort") {
+          return React.cloneElement(child as React.ReactElement, {
+            children: (
+              <MenuOutlined
+                ref={setActivatorNodeRef}
+                style={{ touchAction: "none", cursor: "move" }}
+                {...listeners}
+              />
+            ),
+          });
+        }
+        return child;
+      })}
+    </tr>
+  );
+};
+
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   searchParams: any;
@@ -71,6 +141,8 @@ const OrderTable: React.FC<{
 }> = ({ data, searchParams, user }) => {
   let storedQuery = null;
   let page;
+  const { RangePicker } = DatePicker;
+  const { Text } = Typography;
   const router = useRouter();
   const [orders, setOrders] = useState<ClientOrderType[]>(data);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
@@ -79,6 +151,13 @@ const OrderTable: React.FC<{
   const [minPrice, setMinPrice] = useState<number | undefined>(
     searchParams["item_price"]?.split("to")[0]
   );
+  const [startDate, setStartDate] = useState<number | undefined>(
+    searchParams["created_at"]?.split("to")[0]
+  );
+  const [endDate, setEndDate] = useState<number | undefined>(
+    searchParams["created_at"]?.split("to")[1]
+  );
+
   const [maxPrice, setMaxPrice] = useState<number | undefined>(
     searchParams["item_price"]?.split("to")[1]
   );
@@ -119,6 +198,12 @@ const OrderTable: React.FC<{
     if (query["item_price"]?.split("to")[1])
       setMaxPrice(query["item_price"]?.split("to")[1]);
 
+    if (query["created_at"]?.split("to")[0])
+      setStartDate(query["created_at"]?.split("to")[0]);
+
+    if (query["created_at"]?.split("to")[1])
+      setEndDate(query["created_at"]?.split("to")[1]);
+
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
     }
@@ -155,8 +240,18 @@ const OrderTable: React.FC<{
 
   const columns: ColumnsType<ClientOrderType> = [
     {
+      key: "sort",
+      width: "40px",
+    },
+    {
+      title: "კოდი",
+      dataIndex: "id",
+      width: "80px",
+    },
+    {
       title: "ქალაქი",
       dataIndex: "city",
+      width: "100px",
       filters: getUniques(data, "city"),
 
       filterSearch: true,
@@ -164,11 +259,11 @@ const OrderTable: React.FC<{
 
       defaultFilteredValue: getDefaultFilter(storedQuery, "city"),
       onFilter: (value, record) => record.city.includes(value as string),
-      width: "8%",
     },
     {
       title: "სახელი და გვარი",
       dataIndex: "addressee_full_name",
+      width: "140px",
       filters: getUniques(data, "addressee_full_name"),
       filterSearch: true,
       filteredValue: filteredInfo?.addressee_full_name || null,
@@ -178,7 +273,6 @@ const OrderTable: React.FC<{
       ),
       onFilter: (value, record) =>
         record.addressee_full_name == (value as string),
-      width: "15%",
     },
     {
       title: "მისამართი",
@@ -188,7 +282,7 @@ const OrderTable: React.FC<{
       filteredValue: filteredInfo?.address || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
       onFilter: (value, record) => record.address.includes(value as string),
-      width: "12%",
+      width: "140px",
     },
     {
       title: "ტელეფონი",
@@ -197,15 +291,15 @@ const OrderTable: React.FC<{
       filterSearch: true,
       filteredValue: filteredInfo?.phone_number || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "phone_number"),
+      width: "140px",
       onFilter: (value, record) =>
         record.phone_number.includes(value as string),
-      width: "10%",
     },
 
     {
       title: "კომენტარი",
       dataIndex: "comment",
-      width: "10%",
+      width: "120px",
       filteredValue: filteredInfo?.comment || null,
       render: (text: string) => <Comment text={text} />,
     },
@@ -213,7 +307,7 @@ const OrderTable: React.FC<{
     {
       title: "სტატუსი",
       dataIndex: "status",
-      width: "10%",
+      width: "150px",
       filters: [
         { text: "სტატუსის გარეშე", value: "DF" },
         { text: "ჩაბარებულია", value: "GR" },
@@ -257,6 +351,7 @@ const OrderTable: React.FC<{
     {
       title: "ფასი",
       dataIndex: "item_price",
+      width: "110px",
       sorter: (a, b) => +a.item_price - +b.item_price,
       sortOrder: sortedInfo?.field === "item_price" ? sortedInfo.order : null,
       defaultSortOrder:
@@ -267,7 +362,6 @@ const OrderTable: React.FC<{
               .order as SortOrder)
           : undefined,
       defaultFilteredValue: getDefaultFilter(storedQuery, "item_price"),
-      width: "8%",
       filteredValue: filteredInfo?.item_price || null,
       filterDropdown: ({ setSelectedKeys, confirm }) => {
         return (
@@ -354,6 +448,7 @@ const OrderTable: React.FC<{
       dataIndex: "courier_fee",
       sorter: (a, b) => a.courier_fee - b.courier_fee,
       filteredValue: filteredInfo?.courier_fee || null,
+      width: "150px",
       sortOrder: sortedInfo?.field === "courier_fee" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
@@ -362,20 +457,69 @@ const OrderTable: React.FC<{
           ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
               .order as SortOrder)
           : undefined,
-      width: "10%",
     },
     {
       title: "თარიღი",
       dataIndex: "created_at",
-      filters: getUniques(data, "created_at"),
-      filterSearch: true,
-      filteredValue: filteredInfo?.created_at || null,
+      defaultSortOrder:
+        storedQuery &&
+        queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
+          "created_at"
+          ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
+              .order as SortOrder)
+          : undefined,
       defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
-      onFilter: (value, record) => record.created_at.includes(value as string),
-      width: "8%",
+      filteredValue: filteredInfo?.created_at || null,
+      width: "120px",
+      onFilter: (value, record) => {
+        const created_at = new Date(record.created_at).getTime();
+        console.log(
+          searchParams["created_at"]?.split("to")[0],
+          record.created_at,
+          searchParams["created_at"]?.split("to")[1]
+        );
+        if (
+          searchParams["created_at"]?.split("to")[0] &&
+          searchParams["created_at"]?.split("to")[1]
+        ) {
+          return (
+            created_at >=
+              new Date(searchParams["created_at"]?.split("to")[0]).getTime() &&
+            created_at <=
+              new Date(searchParams["created_at"]?.split("to")[1]).getTime() +
+                86400000
+          );
+        }
+
+        return true;
+      },
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
+      filterDropdown: ({ setSelectedKeys, confirm }) => (
+        <div className="flex flex-col  p-2">
+          <RangePicker format="YYYY-MM-DD" onChange={onDateChange} />
+
+          <Button
+            type="primary"
+            className="w-full mt-2 block"
+            onClick={() => {
+              if (startDate && endDate) {
+                setSelectedKeys([startDate as number, endDate as number]);
+              } else {
+                setSelectedKeys([]);
+              }
+
+              confirm();
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            OK
+          </Button>
+        </div>
+      ),
     },
     {
+      width: "40px",
       title: () => (
         <ClearOutlined
           onClick={() => {
@@ -392,7 +536,6 @@ const OrderTable: React.FC<{
         />
       ),
       dataIndex: "edit",
-      width: "3.5%",
       render: (_text: string, record: ClientOrderType) => (
         <Button
           type="link"
@@ -406,8 +549,11 @@ const OrderTable: React.FC<{
     },
   ];
 
-  if (user?.user_data.user_type == "client") {
-    columns.splice(5, 1);
+  if (user?.user_data.user_type == "courier") {
+    columns.splice(2, 1);
+    columns.splice(2, 1);
+  } else {
+    columns.splice(0, 1);
   }
   const rowSelection: TableRowSelection<ClientOrderType> = {
     selectedRowKeys,
@@ -447,6 +593,9 @@ const OrderTable: React.FC<{
 
   //event handlers
   const handleStatusChange = async (key: number, value: string) => {
+    if (user?.user_data.user_type === "client") {
+      return;
+    }
     try {
       const response = await fetch(`${process.env.API_URL}/orders/${key}`, {
         method: "PATCH",
@@ -529,6 +678,24 @@ const OrderTable: React.FC<{
       }
     }
 
+    if (query["created_at"]) {
+      if (query["created_at"].length == 2) {
+        query["created_at"] = `${new Date(query["created_at"][0])
+          .toLocaleDateString()
+          .replaceAll("/", "-")}to${new Date(query["created_at"][1])
+          .toLocaleDateString()
+          .replaceAll("/", "-")}`;
+      } else {
+        query["created_at"] = `${new Date(query["created_at"][0].split("to")[0])
+          .toLocaleDateString()
+          .replaceAll("/", "-")}to${new Date(
+          query["created_at"][0].split("to")[1]
+        )
+          .toLocaleDateString()
+          .replaceAll("/", "-")}`;
+      }
+    }
+
     localStorage.setItem(
       "query",
       queryString.stringify(query, {
@@ -546,6 +713,14 @@ const OrderTable: React.FC<{
   function onSelectChange(selectedRowIds: React.Key[]) {
     setSelectedRowKeys(selectedRowIds);
   }
+
+  const onDateChange = (
+    value: DatePickerProps["value"] | RangePickerProps["value"],
+    dateString: [string, string] | string
+  ) => {
+    setStartDate(new Date(dateString[0]).getTime());
+    setEndDate(new Date(dateString[1]).getTime());
+  };
 
   const handleDelete = async () => {
     try {
@@ -572,24 +747,131 @@ const OrderTable: React.FC<{
     }
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        // https://docs.dndkit.com/api-documentation/sensors/pointer#activation-constraints
+        distance: 1,
+      },
+    })
+  );
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (active.id !== over?.id) {
+      setOrders((prev) => {
+        const activeIndex = prev.findIndex((i) => i.id === active.id);
+        const overIndex = prev.findIndex((i) => i.id === over?.id);
+        return arrayMove(prev, activeIndex, overIndex);
+      });
+    }
+  };
+  console.log(orders);
   return (
     <StyleProvider cache={cache}>
-      <Table
-        columns={columns}
-        dataSource={orders}
-        onChange={onChange}
-        scroll={{ y: "60vh", x: 1600 }}
-        className="custom-scroll"
-        sticky={true}
-        rowSelection={
-          user?.user_data.user_type != "client" ? rowSelection : undefined
-        }
-        rowKey={(record: ClientOrderType) => record.id}
-        pagination={{ pageSize: 10, current: defaultCurrent as number }}
-      />
+      <DndContext
+        sensors={sensors}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={onDragEnd}
+      >
+        <SortableContext
+          // rowKey array
+          items={orders.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <Table
+            columns={columns}
+            dataSource={orders}
+            onChange={onChange}
+            scroll={{ y: "65vh", x: 750 }}
+            className="custom-scroll"
+            components={{
+              body: {
+                row: Row,
+              },
+            }}
+            sticky={true}
+            rowSelection={
+              user?.user_data.user_type != "client" ? rowSelection : undefined
+            }
+            rowKey={"id"}
+            summary={(pageData) => {
+              let totalPrice = 0;
+              let totalCourierFee = 0;
+              let count = 0;
+              if (selectedRowKeys.length) {
+                totalPrice = data.reduce(
+                  (acc, current) =>
+                    selectedRowKeys.indexOf(current.id) !== -1
+                      ? acc + +current.item_price
+                      : acc,
+                  0
+                );
+                totalCourierFee = data.reduce(
+                  (acc, current) =>
+                    selectedRowKeys.indexOf(current.id) !== -1
+                      ? acc + +current.courier_fee
+                      : acc,
+                  0
+                );
+              } else {
+                pageData.forEach(({ item_price, courier_fee }) => {
+                  totalPrice += +item_price;
+                  totalCourierFee += +courier_fee;
+                  count++;
+                });
+              }
+
+              return (
+                <>
+                  <Table.Summary.Row className="absolute text-[15px]">
+                    <Table.Summary.Cell index={1} className="font-bold">
+                      ჯამი
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Text>ფასი: {totalPrice.toFixed(2)} ₾</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={4}>
+                      <Text>საკურიერო: {totalCourierFee.toFixed(2)} ₾</Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} className="font-bold">
+                      საშუალო
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Text>
+                        ფასი:{" "}
+                        {(
+                          totalPrice / (selectedRowKeys.length || count)
+                        ).toFixed(2)}
+                        ₾
+                      </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={4}>
+                      <Text>
+                        საკურიერო:{" "}
+                        {(
+                          totalCourierFee / (selectedRowKeys.length || count)
+                        ).toFixed(2)}{" "}
+                        ₾
+                      </Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2} className="font-bold">
+                      რაოდენობა
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <Text>{selectedRowKeys.length || count}</Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </>
+              );
+            }}
+            pagination={{ pageSize: 10, current: defaultCurrent as number }}
+          />
+        </SortableContext>
+      </DndContext>
       {isEdit && editInfo && (
         <TableContext.Provider value={{ orders, setOrders, user, setIsEdit }}>
           <BlackScreen setIsBlackScreen={setIsEdit} isBlackScreen={isEdit} />
+
           <EditOrder order={editInfo} />
         </TableContext.Provider>
       )}
