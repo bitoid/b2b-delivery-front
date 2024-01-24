@@ -39,7 +39,7 @@ const getOrders = async (token: string | undefined) => {
 
     let data = await response.json();
 
-    return data.results;
+    return data;
   } catch (err) {
     console.log(err);
   }
