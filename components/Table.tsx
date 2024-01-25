@@ -557,6 +557,44 @@ const OrderTable: React.FC<{
         </Button>
       ),
     },
+
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record) => {
+    //     const columnNames = {
+    //       id: "კოდი",
+    //       city: "ქალაქი",
+    //       addressee_full_name: "სახელი და გვარი",
+    //       address: "მისამართი",
+    //       phone_number: "ტელეფონი",
+    //     };
+
+    //     return (
+    //       <button
+    //         onClick={() => {
+    //           const printWindow = window.open("", "_blank");
+
+    //           printWindow?.document.write(
+    //             "<div style=`display: flex; gap: 20px`>"
+    //           );
+    //           Object.keys(columnNames).forEach((key) => {
+    //             const rowName = key; // Replace this with your mapping from keys to row names
+    //             printWindow?.document.write(
+    //               `<span>${columnNames[key]}: ${record[key]}</span>`
+    //             );
+    //           });
+    //           printWindow?.document.write("</div>");
+    //           printWindow?.document.write("</body></html>");
+    //           printWindow?.document.close();
+    //           printWindow?.print();
+    //         }}
+    //       >
+    //         Print
+    //       </button>
+    //     );
+    //   },
+    // },
   ];
 
   if (user?.user_data.user_type == "courier") {
@@ -571,35 +609,80 @@ const OrderTable: React.FC<{
     getCheckboxProps: (record: ClientOrderType) => ({
       id: String(record.id),
     }),
-    selections:
-      user?.user_data.user_type == "admin"
-        ? [
-            {
-              key: "delete",
-              text: "მონიშნული შეკვეთების წაშლა",
-              onSelect: () => {
-                setIsDelete(true);
-              },
-            },
+    selections: [
+      {
+        key: "delete",
+        text: "მონიშნული შეკვეთების წაშლა",
+        onSelect: () => {
+          setIsDelete(true);
+        },
+      },
 
-            {
-              key: "send",
-              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-              onSelect: () => {
-                // edRowKeys);
-              },
-            },
-          ]
-        : [
-            {
-              key: "send",
-              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-              onSelect: () => {
-                // edRowKeys);
-              },
-            },
-          ],
+      {
+        key: "send",
+        text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
+        onSelect: () => {
+          // edRowKeys);
+        },
+      },
+      {
+        key: "print",
+        text: "მონიშნული შეკვეთების დაპრინტვა",
+        onSelect: () => {
+          console.log(selectedRowKeys);
+          const printWindow = window.open("", "_blank");
+          const columnNames = {
+            id: "კოდი",
+            city: "ქალაქი",
+            addressee_full_name: "სახელი და გვარი",
+            address: "მისამართი",
+            phone_number: "ტელეფონი",
+          };
+
+          // Get the selected rows from the data using the selected keys
+          const selectedRows = data.filter((row) =>
+            selectedRowKeys.includes(row.id)
+          );
+          printWindow?.document.write("<table style='width:100%'>");
+
+          // Write table headers
+          printWindow?.document.write("<tr style=`border: 1px solid black`>");
+          Object.values(columnNames).forEach((value) => {
+            printWindow?.document.write(
+              `<th style="border: 1px solid black">${value}</th>`
+            );
+          });
+          printWindow?.document.write("</tr>");
+
+          interface NewClientOrderType extends ClientOrderType {
+            [key: string]: any;
+          }
+          // Write table rows
+          selectedRows.forEach((record: NewClientOrderType) => {
+            printWindow?.document.write("<tr style=`border: 1px solid black`>");
+            Object.keys(columnNames).forEach((key) => {
+              printWindow?.document.write(
+                `<td style="text-align: center; border: 1px solid black">${record[key]}</td>`
+              );
+            });
+            printWindow?.document.write("</tr>");
+          });
+
+          printWindow?.document.write("</table>");
+
+          printWindow?.document.write("</body></html>");
+          printWindow?.document.close();
+          printWindow?.print();
+        },
+      },
+    ],
   };
+
+  if (user?.user_data.user_type != "admin") {
+    if (Array.isArray(rowSelection.selections)) {
+      rowSelection.selections.splice(0, 1);
+    }
+  }
 
   //event handlers
   const handleStatusChange = async (key: number, value: string) => {
