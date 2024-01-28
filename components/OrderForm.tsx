@@ -45,7 +45,7 @@ export default function OrderForm({
       className={
         mode == "edit"
           ? "fixed z-20 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[750px] rounded-[10px]"
-          : "p-7"
+          : ""
       }
       onSubmit={handleSubmit(onSubmit)}
     >

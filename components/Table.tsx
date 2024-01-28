@@ -49,7 +49,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-
+import dayjs from "dayjs";
 interface CommentProps {
   text: string;
 }
@@ -192,17 +192,20 @@ const OrderTable: React.FC<{
       );
     }
 
-    if (query["item_price"]?.split("to")[0])
-      setMinPrice(query["item_price"]?.split("to")[0]);
+    let modifiedQuery: any = queryString.parse(storedQuery || "", {
+      arrayFormat: "comma",
+    });
+    if (modifiedQuery["item_price"]?.split("to")[0])
+      setMinPrice(modifiedQuery["item_price"]?.split("to")[0]);
 
-    if (query["item_price"]?.split("to")[1])
-      setMaxPrice(query["item_price"]?.split("to")[1]);
+    if (modifiedQuery["item_price"]?.split("to")[1])
+      setMaxPrice(modifiedQuery["item_price"]?.split("to")[1]);
 
-    if (query["created_at"]?.split("to")[0])
-      setStartDate(query["created_at"]?.split("to")[0]);
+    if (modifiedQuery["created_at"]?.split("to")[0])
+      setStartDate(modifiedQuery["created_at"]?.split("to")[0]);
 
-    if (query["created_at"]?.split("to")[1])
-      setEndDate(query["created_at"]?.split("to")[1]);
+    if (modifiedQuery["created_at"]?.split("to")[1])
+      setEndDate(modifiedQuery["created_at"]?.split("to")[1]);
 
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
@@ -218,6 +221,7 @@ const OrderTable: React.FC<{
     // );
   }, []);
 
+  console.log(minPrice);
   const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   //optimezed antd for nextjs
@@ -462,6 +466,9 @@ const OrderTable: React.FC<{
     {
       title: "თარიღი",
       dataIndex: "created_at",
+      sorter: (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sortOrder: sortedInfo?.field === "created_at" ? sortedInfo.order : null,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -469,7 +476,6 @@ const OrderTable: React.FC<{
           ? (queryString.parse(storedQuery, { arrayFormat: "comma" })
               .order as SortOrder)
           : undefined,
-      defaultFilteredValue: getDefaultFilter(storedQuery, "created_at"),
       filteredValue: filteredInfo?.created_at || null,
       width: "120px",
       onFilter: (value, record) => {
@@ -497,7 +503,15 @@ const OrderTable: React.FC<{
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
       filterDropdown: ({ setSelectedKeys, confirm }) => (
         <div className="flex flex-col  p-2">
-          <RangePicker format="YYYY-MM-DD" onChange={onDateChange} />
+          <RangePicker
+            format="YYYY-MM-DD"
+            onChange={onDateChange}
+            defaultValue={
+              startDate && endDate
+                ? [dayjs(startDate), dayjs(endDate)]
+                : undefined
+            }
+          />
 
           <Button
             type="primary"
@@ -548,6 +562,44 @@ const OrderTable: React.FC<{
         </Button>
       ),
     },
+
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   render: (text, record) => {
+    //     const columnNames = {
+    //       id: "კოდი",
+    //       city: "ქალაქი",
+    //       addressee_full_name: "სახელი და გვარი",
+    //       address: "მისამართი",
+    //       phone_number: "ტელეფონი",
+    //     };
+
+    //     return (
+    //       <button
+    //         onClick={() => {
+    //           const printWindow = window.open("", "_blank");
+
+    //           printWindow?.document.write(
+    //             "<div style=`display: flex; gap: 20px`>"
+    //           );
+    //           Object.keys(columnNames).forEach((key) => {
+    //             const rowName = key; // Replace this with your mapping from keys to row names
+    //             printWindow?.document.write(
+    //               `<span>${columnNames[key]}: ${record[key]}</span>`
+    //             );
+    //           });
+    //           printWindow?.document.write("</div>");
+    //           printWindow?.document.write("</body></html>");
+    //           printWindow?.document.close();
+    //           printWindow?.print();
+    //         }}
+    //       >
+    //         Print
+    //       </button>
+    //     );
+    //   },
+    // },
   ];
 
   if (user?.user_data.user_type == "courier") {
@@ -562,35 +614,80 @@ const OrderTable: React.FC<{
     getCheckboxProps: (record: ClientOrderType) => ({
       id: String(record.id),
     }),
-    selections:
-      user?.user_data.user_type == "admin"
-        ? [
-            {
-              key: "delete",
-              text: "მონიშნული შეკვეთების წაშლა",
-              onSelect: () => {
-                setIsDelete(true);
-              },
-            },
+    selections: [
+      {
+        key: "delete",
+        text: "მონიშნული შეკვეთების წაშლა",
+        onSelect: () => {
+          setIsDelete(true);
+        },
+      },
 
-            {
-              key: "send",
-              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-              onSelect: () => {
-                // edRowKeys);
-              },
-            },
-          ]
-        : [
-            {
-              key: "send",
-              text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-              onSelect: () => {
-                // edRowKeys);
-              },
-            },
-          ],
+      {
+        key: "send",
+        text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
+        onSelect: () => {
+          // edRowKeys);
+        },
+      },
+      {
+        key: "print",
+        text: "მონიშნული შეკვეთების დაპრინტვა",
+        onSelect: () => {
+          console.log(selectedRowKeys);
+          const printWindow = window.open("", "_blank");
+          const columnNames = {
+            id: "კოდი",
+            city: "ქალაქი",
+            addressee_full_name: "სახელი და გვარი",
+            address: "მისამართი",
+            phone_number: "ტელეფონი",
+          };
+
+          // Get the selected rows from the data using the selected keys
+          const selectedRows = data.filter((row) =>
+            selectedRowKeys.includes(row.id)
+          );
+          printWindow?.document.write("<table style='width:100%'>");
+
+          // Write table headers
+          printWindow?.document.write("<tr style=`border: 1px solid black`>");
+          Object.values(columnNames).forEach((value) => {
+            printWindow?.document.write(
+              `<th style="border: 1px solid black">${value}</th>`
+            );
+          });
+          printWindow?.document.write("</tr>");
+
+          interface NewClientOrderType extends ClientOrderType {
+            [key: string]: any;
+          }
+          // Write table rows
+          selectedRows.forEach((record: NewClientOrderType) => {
+            printWindow?.document.write("<tr style=`border: 1px solid black`>");
+            Object.keys(columnNames).forEach((key) => {
+              printWindow?.document.write(
+                `<td style="text-align: center; border: 1px solid black">${record[key]}</td>`
+              );
+            });
+            printWindow?.document.write("</tr>");
+          });
+
+          printWindow?.document.write("</table>");
+
+          printWindow?.document.write("</body></html>");
+          printWindow?.document.close();
+          printWindow?.print();
+        },
+      },
+    ],
   };
+
+  if (user?.user_data.user_type != "admin") {
+    if (Array.isArray(rowSelection.selections)) {
+      rowSelection.selections.splice(0, 1);
+    }
+  }
 
   //event handlers
   const handleStatusChange = async (key: number, value: string) => {
@@ -865,7 +962,11 @@ const OrderTable: React.FC<{
                 </>
               );
             }}
-            pagination={{ pageSize: 10, current: defaultCurrent as number }}
+            pagination={{
+              pageSize: 10,
+              current: defaultCurrent as number,
+              showSizeChanger: false,
+            }}
           />
         </SortableContext>
       </DndContext>

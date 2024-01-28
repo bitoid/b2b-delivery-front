@@ -52,8 +52,8 @@ export default function AddOrder({
     }
   };
   return (
-    <div className="bg-white shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
-      <div className="flex gap-3 pl-7 pt-4">
+    <div className="bg-white p-6 shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
+      <div className="flex gap-3 pb-2">
         <button
           type="button"
           className={cn(
