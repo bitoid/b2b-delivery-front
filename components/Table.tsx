@@ -505,7 +505,11 @@ const OrderTable: React.FC<{
           <RangePicker
             format="YYYY-MM-DD"
             onChange={onDateChange}
-            defaultValue={[dayjs(startDate), dayjs(endDate)]}
+            defaultValue={
+              startDate && endDate
+                ? [dayjs(startDate), dayjs(endDate)]
+                : undefined
+            }
           />
 
           <Button
