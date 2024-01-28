@@ -957,7 +957,11 @@ const OrderTable: React.FC<{
                 </>
               );
             }}
-            pagination={{ pageSize: 10, current: defaultCurrent as number }}
+            pagination={{
+              pageSize: 10,
+              current: defaultCurrent as number,
+              showSizeChanger: false,
+            }}
           />
         </SortableContext>
       </DndContext>

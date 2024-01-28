@@ -47,6 +47,7 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
         }
       );
 
+      console.log(response);
       if (response.ok) {
         deletedOrder &&
           context.orders.splice(context.orders.indexOf(deletedOrder), 1);
