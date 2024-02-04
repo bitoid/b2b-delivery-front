@@ -5,7 +5,7 @@ import { useState } from "react";
 import React from "react";
 import ExcelForm from "./ExcelForm";
 import OrderForm from "./OrderForm";
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import { UserType } from "@/types/user";
 
 export default function AddOrder({

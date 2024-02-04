@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   ConfigProvider,
@@ -13,7 +13,7 @@ import {
   Typography,
 } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import { getUniques, getDefaultFilter, getColorForStatus } from "@/lib/utils";
 import { createCache, extractStyle, StyleProvider } from "@ant-design/cssinjs";
 import type Entity from "@ant-design/cssinjs/es/Cache";
@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
-import { ClearOutlined, MenuOutlined } from "@ant-design/icons";
+import { ClearOutlined } from "@ant-design/icons";
 import { UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
@@ -42,136 +42,63 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { CSS } from "@dnd-kit/utilities";
 import {
   SortableContext,
   arrayMove,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import dayjs from "dayjs";
-interface CommentProps {
-  text: string;
-}
-const Comment: React.FC<CommentProps> = ({ text }) => {
-  const [isComment, setIsComment] = useState(false);
-
-  return (
-    <span
-      className=" px-3 text-sm text-gray-500 cursor-pointer min-w-[120px] relative"
-      onMouseOver={() => setIsComment(true)}
-      onTouchStart={() => setIsComment(true)}
-      onMouseOut={() => setIsComment(false)}
-    >
-      {isComment && text ? (
-        <span className="bg-white absolute break-words w-[350px] p-2 rounded-[5px] z-10 shadow-2xl">
-          {text}
-        </span>
-      ) : (
-        <span>{text.slice(0, 6)}...</span>
-      )}
-    </span>
-  );
-};
-
-interface OrdersContextProps {
-  orders: ClientOrderType[];
-  user: UserType | undefined;
-  setOrders: React.Dispatch<React.SetStateAction<ClientOrderType[]>>;
-  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const initialContext: OrdersContextProps = {
-  orders: [],
-  user: undefined,
-  setIsEdit: () => {},
-  setOrders: () => {},
-};
-
-export const TableContext = createContext<OrdersContextProps>(initialContext);
-
-interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
-  "data-row-key": string;
-}
-
-const Row = ({ children, ...props }: RowProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: props["data-row-key"],
-  });
-
-  const style: React.CSSProperties = {
-    ...props.style,
-    transform: CSS.Transform.toString(transform && { ...transform, scaleY: 1 }),
-    transition,
-    ...(isDragging ? { position: "relative", zIndex: 9999 } : {}),
-  };
-
-  return (
-    <tr {...props} ref={setNodeRef} style={style} {...attributes}>
-      {React.Children.map(children, (child) => {
-        if ((child as React.ReactElement).key === "sort") {
-          return React.cloneElement(child as React.ReactElement, {
-            children: (
-              <MenuOutlined
-                ref={setActivatorNodeRef}
-                style={{ touchAction: "none", cursor: "move" }}
-                {...listeners}
-              />
-            ),
-          });
-        }
-        return child;
-      })}
-    </tr>
-  );
-};
+import Comment from "./Comment";
+import Row from "./Row";
+import { TableContext } from "@/context/tableContext";
+import SearchParamsType from "@/types/searchParams";
 
 const OrderTable: React.FC<{
   data: ClientOrderType[];
   filteredOrders: ClientOrderType[];
-  searchParams: any;
+  searchParams: SearchParamsType;
   user: UserType | undefined;
 }> = ({ data, searchParams, user, filteredOrders }) => {
   let storedQuery = null;
-  let page;
   const { RangePicker } = DatePicker;
   const { Text } = Typography;
-  const router = useRouter();
+
   const [orders, setOrders] = useState<ClientOrderType[]>(filteredOrders);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
-    searchParams["item_price"]?.split("to")[0]
-  );
-  const [startDate, setStartDate] = useState<number | undefined>(
-    searchParams["created_at"]?.split("to")[0]
-  );
-  const [endDate, setEndDate] = useState<number | undefined>(
-    searchParams["created_at"]?.split("to")[1]
+    searchParams["item_price"]
+      ? Number(searchParams["item_price"].split("to")[0])
+      : undefined
   );
 
   const [maxPrice, setMaxPrice] = useState<number | undefined>(
-    searchParams["item_price"]?.split("to")[1]
+    searchParams["item_price"]
+      ? Number(searchParams["item_price"].split("to")[1])
+      : undefined
   );
-  const [query, setQuery] = useState(
-    storedQuery
-      ? queryString.parse(storedQuery, { arrayFormat: "comma" })
-      : searchParams
+
+  const [startDate, setStartDate] = useState<number | undefined>(
+    searchParams["created_at"]
+      ? Number(searchParams["created_at"]?.split("to")[0])
+      : undefined
   );
+  const [endDate, setEndDate] = useState<number | undefined>(
+    searchParams["created_at"]
+      ? Number(searchParams["created_at"]?.split("to")[1])
+      : undefined
+  );
+
   const [isDelete, setIsDelete] = useState<boolean>(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filteredInfo, setFilteredInfo] =
     useState<Record<string, FilterValue | null>>();
   const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>();
+  const [defaultCurrent, setDefaultCurrent] = useState(1);
+
+  const router = useRouter();
+
   useEffect(() => {
     let storedQuery = localStorage.getItem("query");
     setFilteredInfo(
@@ -193,39 +120,32 @@ const OrderTable: React.FC<{
       );
     }
 
-    let modifiedQuery: any = queryString.parse(storedQuery || "", {
+    let modifiedQuery: SearchParamsType = queryString.parse(storedQuery || "", {
       arrayFormat: "comma",
     });
     if (modifiedQuery["item_price"]?.split("to")[0])
-      setMinPrice(modifiedQuery["item_price"]?.split("to")[0]);
+      setMinPrice(Number(modifiedQuery["item_price"]?.split("to")[0]));
 
     if (modifiedQuery["item_price"]?.split("to")[1])
-      setMaxPrice(modifiedQuery["item_price"]?.split("to")[1]);
+      setMaxPrice(Number(modifiedQuery["item_price"]?.split("to")[1]));
 
     if (modifiedQuery["created_at"]?.split("to")[0])
-      setStartDate(modifiedQuery["created_at"]?.split("to")[0]);
+      setStartDate(Number(modifiedQuery["created_at"]?.split("to")[0]));
 
     if (modifiedQuery["created_at"]?.split("to")[1])
-      setEndDate(modifiedQuery["created_at"]?.split("to")[1]);
+      setEndDate(Number(modifiedQuery["created_at"]?.split("to")[1]));
 
     if (!searchParams["current"]) {
       router.push("?current=1&pageSize=10");
     }
-    page = searchParams["current"];
     if (storedQuery) {
       router.push(`/orders?${storedQuery}`);
-      setQuery(queryString.parse(storedQuery, { arrayFormat: "comma" }));
     }
-
-    // setDefaultCurrent(
-    //   Number(queryString.parse(localStorage.getItem("query") || "{}").current)
-    // );
   }, []);
 
   useEffect(() => {
     setOrders(filteredOrders);
   }, [searchParams]);
-  const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   //optimezed antd for nextjs
   const cache = React.useMemo<Entity>(() => createCache(), []);
@@ -272,8 +192,7 @@ const OrderTable: React.FC<{
       width: "140px",
       filters: getUniques(data, "addressee_full_name"),
       filterSearch: true,
-      filtered: searchParams["addressee_full_name"],
-      filteredValue: searchParams["addressee_full_name"]?.split(","),
+      filteredValue: filteredInfo?.addressee_full_name || null,
       defaultFilteredValue: getDefaultFilter(
         storedQuery,
         "addressee_full_name"
@@ -501,7 +420,6 @@ const OrderTable: React.FC<{
             localStorage.removeItem("filters");
             localStorage.removeItem("sorteds");
             router.push("/orders?current=1&pageSize=10");
-            setQuery(searchParams);
             setMinPrice(undefined);
             setMaxPrice(undefined);
             setFilteredInfo({});
@@ -521,44 +439,6 @@ const OrderTable: React.FC<{
         </Button>
       ),
     },
-
-    // {
-    //   title: "Action",
-    //   key: "action",
-    //   render: (text, record) => {
-    //     const columnNames = {
-    //       id: "კოდი",
-    //       city: "ქალაქი",
-    //       addressee_full_name: "სახელი და გვარი",
-    //       address: "მისამართი",
-    //       phone_number: "ტელეფონი",
-    //     };
-
-    //     return (
-    //       <button
-    //         onClick={() => {
-    //           const printWindow = window.open("", "_blank");
-
-    //           printWindow?.document.write(
-    //             "<div style=`display: flex; gap: 20px`>"
-    //           );
-    //           Object.keys(columnNames).forEach((key) => {
-    //             const rowName = key; // Replace this with your mapping from keys to row names
-    //             printWindow?.document.write(
-    //               `<span>${columnNames[key]}: ${record[key]}</span>`
-    //             );
-    //           });
-    //           printWindow?.document.write("</div>");
-    //           printWindow?.document.write("</body></html>");
-    //           printWindow?.document.close();
-    //           printWindow?.print();
-    //         }}
-    //       >
-    //         Print
-    //       </button>
-    //     );
-    //   },
-    // },
   ];
 
   if (user?.user_data.user_type == "courier") {
@@ -593,7 +473,6 @@ const OrderTable: React.FC<{
         key: "print",
         text: "მონიშნული შეკვეთების დაპრინტვა",
         onSelect: () => {
-          console.log(selectedRowKeys);
           const printWindow = window.open("", "_blank");
           const columnNames = {
             id: "კოდი",
@@ -712,7 +591,7 @@ const OrderTable: React.FC<{
         )[];
       }
     });
-    const query: any = {
+    const query: SearchParamsType = {
       ...pagination,
       ...filteredSorter,
       ...filteredFilters,
@@ -827,7 +706,7 @@ const OrderTable: React.FC<{
       });
     }
   };
-  console.log(orders);
+
   return (
     <StyleProvider cache={cache}>
       <DndContext

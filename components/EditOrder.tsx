@@ -1,7 +1,7 @@
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import React, { useContext, useState } from "react";
-import { TableContext } from "./Table";
 import OrderForm from "./OrderForm";
+import { TableContext } from "@/context/tableContext";
 
 export const DeleteModal = ({
   setIsDelete,

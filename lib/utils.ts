@@ -1,4 +1,4 @@
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import { ClassValue, clsx } from "clsx";
 import queryString from "query-string";
 import { twMerge } from "tailwind-merge";

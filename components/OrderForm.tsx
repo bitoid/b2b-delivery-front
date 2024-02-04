@@ -1,9 +1,9 @@
 import { getColorForStatus } from "@/lib/utils";
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import { ConfigProvider, Select } from "antd";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { TableContext } from "./Table";
+import { TableContext } from "@/context/tableContext";
 import { TrashIcon } from "@heroicons/react/20/solid";
 import InputMask from "react-input-mask";
 
@@ -53,7 +53,7 @@ export default function OrderForm({
         <h3 className="text-base font-semibold leading-7 text-gray-900">
           შეკვეთის დეტალები
         </h3>
-        {mode == "edit" && context.user?.user_data.username == "admin" && (
+        {mode == "edit" && context?.user?.user_data.username == "admin" && (
           <button
             type="button"
             className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -77,7 +77,7 @@ export default function OrderForm({
             <div className="mt-2">
               <input
                 {...register("addressee_full_name", { required: true })}
-                disabled={context.user?.user_data.user_type == "courier"}
+                disabled={context?.user?.user_data.user_type == "courier"}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -93,7 +93,7 @@ export default function OrderForm({
               <select
                 {...register("city", { required: true })}
                 className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                disabled={context.user?.user_data.user_type == "courier"}
+                disabled={context?.user?.user_data.user_type == "courier"}
               >
                 <option>თბილისი</option>
                 <option>ბათუმი</option>
@@ -112,7 +112,7 @@ export default function OrderForm({
               <input
                 {...register("address", { required: true })}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                disabled={context.user?.user_data.user_type == "courier"}
+                disabled={context?.user?.user_data.user_type == "courier"}
               />
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function OrderForm({
                 maskChar={null}
                 {...register("phone_number", { required: true })}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                disabled={context.user?.user_data.user_type == "courier"}
+                disabled={context?.user?.user_data.user_type == "courier"}
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function OrderForm({
             </label>
             <div className="mt-2">
               {mode == "edit" ? (
-                context.user?.user_data.user_type == "admin" ? (
+                context?.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("item_price", { required: true })}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -184,7 +184,7 @@ export default function OrderForm({
             </label>
             <div className="mt-2">
               {mode == "edit" ? (
-                context.user?.user_data.user_type == "admin" ? (
+                context?.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("courier_fee", { required: true })}
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -222,7 +222,7 @@ export default function OrderForm({
               </p>
             </div>
           </div>
-          {mode == "edit" && context.user?.user_data.user_type != "client" && (
+          {mode == "edit" && context?.user?.user_data.user_type != "client" && (
             <div className="sm:col-span-3">
               <label
                 htmlFor="postal-code"

@@ -1,22 +1,18 @@
-import { ClientOrderType } from "@/types/orders";
+import { ClientOrderType } from "@/types/order";
 import { Metadata } from "next";
 import OrderTable from "@/components/Table";
 import { getCurrentUser } from "@/lib/session";
 import queryString from "query-string";
+import SearchParamsType from "@/types/searchParams";
 
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
 };
 
-interface ParamsType {
-  town: string;
-  comment: string;
-}
-
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: ParamsType;
+  searchParams: SearchParamsType;
 }) {
   const user = await getCurrentUser();
 
@@ -38,7 +34,7 @@ export default async function OrdersPage({
 
 const getOrders = async (
   token: string | undefined,
-  searchParams: ParamsType
+  searchParams: SearchParamsType
 ) => {
   const query = queryString.stringify(searchParams, {
     arrayFormat: "comma",
