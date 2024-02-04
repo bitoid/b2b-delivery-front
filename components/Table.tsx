@@ -353,6 +353,7 @@ const OrderTable: React.FC<{
       dataIndex: "item_price",
       width: "110px",
       sortOrder: sortedInfo?.field === "item_price" ? sortedInfo.order : null,
+      sorter: true,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -735,20 +736,23 @@ const OrderTable: React.FC<{
     }
 
     if (query["created_at"]) {
+      const startDate = new Date(query["created_at"][0]);
+      const formattedStartDate =
+        startDate.getFullYear() +
+        "-" +
+        ("0" + (startDate.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + startDate.getDate()).slice(-2);
+      const endDate = new Date(query["created_at"][1]);
+      const formattedEndDate =
+        endDate.getFullYear() +
+        "-" +
+        ("0" + (endDate.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + endDate.getDate()).slice(-2);
+
       if (query["created_at"].length == 2) {
-        query["created_at"] = `${new Date(query["created_at"][0])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}to${new Date(query["created_at"][1])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}`;
-      } else {
-        query["created_at"] = `${new Date(query["created_at"][0].split("to")[0])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}to${new Date(
-          query["created_at"][0].split("to")[1]
-        )
-          .toLocaleDateString()
-          .replaceAll("/", "-")}`;
+        query["created_at"] = `${formattedStartDate}to${formattedEndDate}`;
       }
     }
 
