@@ -136,15 +136,16 @@ const Row = ({ children, ...props }: RowProps) => {
 
 const OrderTable: React.FC<{
   data: ClientOrderType[];
+  filteredOrders: ClientOrderType[];
   searchParams: any;
   user: UserType | undefined;
-}> = ({ data, searchParams, user }) => {
+}> = ({ data, searchParams, user, filteredOrders }) => {
   let storedQuery = null;
   let page;
   const { RangePicker } = DatePicker;
   const { Text } = Typography;
   const router = useRouter();
-  const [orders, setOrders] = useState<ClientOrderType[]>(data);
+  const [orders, setOrders] = useState<ClientOrderType[]>(filteredOrders);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -221,7 +222,9 @@ const OrderTable: React.FC<{
     // );
   }, []);
 
-  console.log(minPrice);
+  useEffect(() => {
+    setOrders(filteredOrders);
+  }, [searchParams]);
   const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   //optimezed antd for nextjs
@@ -262,7 +265,6 @@ const OrderTable: React.FC<{
       filteredValue: filteredInfo?.city || null,
 
       defaultFilteredValue: getDefaultFilter(storedQuery, "city"),
-      onFilter: (value, record) => record.city.includes(value as string),
     },
     {
       title: "სახელი და გვარი",
@@ -270,13 +272,12 @@ const OrderTable: React.FC<{
       width: "140px",
       filters: getUniques(data, "addressee_full_name"),
       filterSearch: true,
-      filteredValue: filteredInfo?.addressee_full_name || null,
+      filtered: searchParams["addressee_full_name"],
+      filteredValue: searchParams["addressee_full_name"]?.split(","),
       defaultFilteredValue: getDefaultFilter(
         storedQuery,
         "addressee_full_name"
       ),
-      onFilter: (value, record) =>
-        record.addressee_full_name == (value as string),
     },
     {
       title: "მისამართი",
@@ -285,7 +286,6 @@ const OrderTable: React.FC<{
       filterSearch: true,
       filteredValue: filteredInfo?.address || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "address"),
-      onFilter: (value, record) => record.address.includes(value as string),
       width: "140px",
     },
     {
@@ -296,8 +296,6 @@ const OrderTable: React.FC<{
       filteredValue: filteredInfo?.phone_number || null,
       defaultFilteredValue: getDefaultFilter(storedQuery, "phone_number"),
       width: "140px",
-      onFilter: (value, record) =>
-        record.phone_number.includes(value as string),
     },
 
     {
@@ -320,9 +318,7 @@ const OrderTable: React.FC<{
         { text: "დაბრუნებულია", value: "BK" },
       ],
       filteredValue: filteredInfo?.status || null,
-      onFilter: (value, record) => {
-        return record.status === value;
-      },
+
       render: (text, record) => (
         <ConfigProvider
           theme={{
@@ -356,8 +352,8 @@ const OrderTable: React.FC<{
       title: "ფასი",
       dataIndex: "item_price",
       width: "110px",
-      sorter: (a, b) => +a.item_price - +b.item_price,
       sortOrder: sortedInfo?.field === "item_price" ? sortedInfo.order : null,
+      sorter: true,
       defaultSortOrder:
         storedQuery &&
         queryString.parse(storedQuery, { arrayFormat: "comma" }).field ===
@@ -431,26 +427,11 @@ const OrderTable: React.FC<{
           </div>
         );
       },
-      onFilter: (value, record) => {
-        const item_price = +record.item_price;
-
-        if (
-          searchParams["item_price"]?.split("to")[0] &&
-          searchParams["item_price"]?.split("to")[1]
-        ) {
-          return (
-            item_price >= +searchParams["item_price"]?.split("to")[0] &&
-            item_price <= +searchParams["item_price"]?.split("to")[1]
-          );
-        }
-
-        return true;
-      },
     },
     {
       title: "საკურიერო",
       dataIndex: "courier_fee",
-      sorter: (a, b) => a.courier_fee - b.courier_fee,
+      sorter: true,
       filteredValue: filteredInfo?.courier_fee || null,
       width: "150px",
       sortOrder: sortedInfo?.field === "courier_fee" ? sortedInfo.order : null,
@@ -477,28 +458,7 @@ const OrderTable: React.FC<{
           : undefined,
       filteredValue: filteredInfo?.created_at || null,
       width: "120px",
-      onFilter: (value, record) => {
-        const created_at = new Date(record.created_at).getTime();
-        console.log(
-          searchParams["created_at"]?.split("to")[0],
-          record.created_at,
-          searchParams["created_at"]?.split("to")[1]
-        );
-        if (
-          searchParams["created_at"]?.split("to")[0] &&
-          searchParams["created_at"]?.split("to")[1]
-        ) {
-          return (
-            created_at >=
-              new Date(searchParams["created_at"]?.split("to")[0]).getTime() &&
-            created_at <=
-              new Date(searchParams["created_at"]?.split("to")[1]).getTime() +
-                86400000
-          );
-        }
 
-        return true;
-      },
       render: (text: string) => <>{text.split("T")[0].replaceAll("-", "/")}</>,
       filterDropdown: ({ setSelectedKeys, confirm }) => (
         <div className="flex flex-col  p-2">
@@ -776,20 +736,23 @@ const OrderTable: React.FC<{
     }
 
     if (query["created_at"]) {
+      const startDate = new Date(query["created_at"][0]);
+      const formattedStartDate =
+        startDate.getFullYear() +
+        "-" +
+        ("0" + (startDate.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + startDate.getDate()).slice(-2);
+      const endDate = new Date(query["created_at"][1]);
+      const formattedEndDate =
+        endDate.getFullYear() +
+        "-" +
+        ("0" + (endDate.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + endDate.getDate()).slice(-2);
+
       if (query["created_at"].length == 2) {
-        query["created_at"] = `${new Date(query["created_at"][0])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}to${new Date(query["created_at"][1])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}`;
-      } else {
-        query["created_at"] = `${new Date(query["created_at"][0].split("to")[0])
-          .toLocaleDateString()
-          .replaceAll("/", "-")}to${new Date(
-          query["created_at"][0].split("to")[1]
-        )
-          .toLocaleDateString()
-          .replaceAll("/", "-")}`;
+        query["created_at"] = `${formattedStartDate}to${formattedEndDate}`;
       }
     }
 
@@ -803,7 +766,9 @@ const OrderTable: React.FC<{
       "orders?" +
         queryString.stringify(query, {
           arrayFormat: "comma",
-        })
+        }),
+
+      { shallow: true }
     );
   };
 
