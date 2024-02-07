@@ -21,7 +21,6 @@ export default async function OrdersPage({
     searchParams
   );
   const orders: ClientOrderType[] = await getFilteredOrders(user?.token);
-  console.log(orders);
   return (
     <div className="rounded-lg bg-white px-5 py-6 shadow sm:px-6 ">
       <OrderTable
