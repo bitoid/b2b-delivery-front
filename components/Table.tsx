@@ -12,6 +12,7 @@ import {
   DatePickerProps,
   Typography,
   message,
+  Modal,
 } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/order";
@@ -28,7 +29,7 @@ import {
 } from "antd/es/table/interface";
 import { useRouter } from "next/navigation";
 import { EditFilled } from "@ant-design/icons";
-import BlackScreen from "./BlackScreen";
+// import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
 import { UserInfoType, UserType } from "@/types/user";
@@ -60,7 +61,8 @@ const OrderTable: React.FC<{
   searchParams: SearchParamsType;
   user: UserType | undefined;
   couriers: UserInfoType[];
-}> = ({ data, searchParams, user, filteredOrders, couriers }) => {
+  clients: UserInfoType[];
+}> = ({ data, searchParams, user, filteredOrders, couriers, clients }) => {
   let storedQuery = null;
   const { RangePicker } = DatePicker;
   const { Text } = Typography;
@@ -181,8 +183,10 @@ const OrderTable: React.FC<{
       title: "კლიენტი",
       dataIndex: "client",
       width: "110px",
-      filters: getUniques(data, "client_name"),
-      render: (text: string, record: ClientOrderType) => record.client_name,
+      filters:
+        clients?.map((item) => ({ text: item.name, value: item.id })) || [],
+      render: (text: string, record: ClientOrderType) =>
+        clients?.find((item) => item.id == record.client)?.name || "...",
       filterSearch: true,
       filteredValue: filteredInfo?.client || null,
 
@@ -489,7 +493,11 @@ const OrderTable: React.FC<{
         key: "delete",
         text: "მონიშნული შეკვეთების წაშლა",
         onSelect: () => {
-          setIsDelete(true);
+          if (selectedRowKeys.length > 0) {
+            setIsDelete(true);
+          } else {
+            message.warning("შეკვეთები არჩეული არ გაქვთ");
+          }
         },
       },
 
@@ -498,6 +506,8 @@ const OrderTable: React.FC<{
         text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
         onSelect: async () => {
           try {
+            message.config({ maxCount: 1 });
+            message.loading("დაელოდეთ...");
             const response = await fetch(
               `${process.env.API_URL}/orders/send_bulk_sms/`,
               {
@@ -717,6 +727,8 @@ const OrderTable: React.FC<{
 
   const handleDelete = async () => {
     try {
+      message.config({ maxCount: 1 });
+      message.loading("დაელოდეთ...");
       const response = await fetch(
         `${process.env.API_URL}/orders/delete-batch/`,
         {
@@ -733,7 +745,11 @@ const OrderTable: React.FC<{
         setOrders((prevOrders) =>
           prevOrders.filter((order) => !selectedRowKeys.includes(order.id))
         );
+        setSelectedRowKeys([]);
+        message.success("შეკვეთები წარმატებით წაიშალა");
         setIsDelete(false);
+      } else {
+        message.error("შეკვეთების წაშლა ვერ მოხერხდა");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -865,40 +881,64 @@ const OrderTable: React.FC<{
           />
         </SortableContext>
       </DndContext>
-      {isEdit && editInfo && (
-        <TableContext.Provider value={{ orders, setOrders, user, setIsEdit }}>
-          <BlackScreen setIsBlackScreen={setIsEdit} isBlackScreen={isEdit} />
+      <TableContext.Provider
+        value={{ orders, setOrders, user, setIsEdit, couriers, clients }}
+      >
+        {editInfo && (
+          <>
+            {/* <BlackScreen setIsBlackScreen={setIsEdit} isBlackScreen={isEdit} /> */}
 
-          <EditOrder order={editInfo} />
-        </TableContext.Provider>
-      )}
+            <Modal
+              open={isEdit}
+              onOk={() => setIsEdit(false)}
+              onCancel={() => setIsEdit(false)}
+              footer={null}
+              width={900}
+            >
+              <EditOrder order={editInfo} setIsEdit={setIsEdit} />
+            </Modal>
+          </>
+        )}
 
-      {user?.user_data.user_type != "courier" && (
-        <button
-          onClick={() => setIsAdd(true)}
-          className="mt-[-50px] flex items-center   bg-indigo-600 py-2 px-3 rounded-[20px] text-white hover:opacity-70 pointer relative z-5"
+        {user?.user_data.user_type != "courier" && (
+          <button
+            onClick={() => setIsAdd(true)}
+            className="mt-[-50px] flex items-center   bg-indigo-600 py-2 px-3 rounded-[20px] text-white hover:opacity-70 pointer relative z-5"
+          >
+            დამატება
+            <PlusIcon className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
+
+        <>
+          <Modal
+            open={isAdd}
+            onOk={() => setIsAdd(false)}
+            onCancel={() => setIsAdd(false)}
+            width={900}
+            footer={null}
+          >
+            <AddOrder
+              user={user}
+              setOrders={setOrders}
+              orders={orders}
+              setIsAdd={setIsAdd}
+            />{" "}
+          </Modal>
+        </>
+
+        <Modal
+          open={isDelete}
+          onOk={() => setIsDelete(false)}
+          onCancel={() => setIsDelete(false)}
+          closeIcon={null}
+          footer={null}
+          width={300}
+          centered
         >
-          დამატება
-          <PlusIcon className="h-5 w-5" aria-hidden="true" />
-        </button>
-      )}
-      {isAdd && (
-        <>
-          <AddOrder
-            user={user}
-            setOrders={setOrders}
-            orders={orders}
-            setIsAdd={setIsAdd}
-          />{" "}
-          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsAdd} />
-        </>
-      )}
-      {isDelete && (
-        <>
           <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
-          <BlackScreen isBlackScreen={isAdd} setIsBlackScreen={setIsDelete} />
-        </>
-      )}
+        </Modal>
+      </TableContext.Provider>
     </StyleProvider>
   );
 };

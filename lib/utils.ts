@@ -18,7 +18,7 @@ export function getUniques(data: ClientOrderType[], fieldName: string) {
     .map((item: any) => {
       return {
         text: item[fieldName],
-        value: fieldName == "client_name" ? item["client"] : item[fieldName],
+        value: item[fieldName],
       };
     });
 }

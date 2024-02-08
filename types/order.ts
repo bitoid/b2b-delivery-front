@@ -1,4 +1,4 @@
-import { UserType } from "./user";
+import { UserInfoType, UserType } from "./user";
 
 interface ClientOrderType {
   sum: number;
@@ -28,6 +28,8 @@ interface CommentProps {
 interface OrdersContextProps {
   orders: ClientOrderType[];
   user: UserType | undefined;
+  couriers: UserInfoType[];
+  clients: UserInfoType[];
   setOrders: React.Dispatch<React.SetStateAction<ClientOrderType[]>>;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
 }

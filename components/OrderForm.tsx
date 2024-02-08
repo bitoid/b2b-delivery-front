@@ -12,10 +12,12 @@ export default function OrderForm({
   onSubmit,
   mode,
   setIsDelete,
+  setIsEdit,
 }: {
   order: ClientOrderType | null;
   onSubmit: (data: ClientOrderType) => void;
   setIsDelete?: (isDelete: boolean) => void;
+  setIsEdit?: (isEdit: boolean) => void;
   mode: "edit" | "add";
 }) {
   const {
@@ -23,8 +25,6 @@ export default function OrderForm({
     handleSubmit,
     watch,
     control,
-    getValues,
-    setValue,
     formState: { errors },
   } = useForm<ClientOrderType>({
     defaultValues: {
@@ -36,33 +36,19 @@ export default function OrderForm({
       item_price: order?.item_price,
       phone_number: order?.phone_number,
       addressee_full_name: order?.addressee_full_name,
+      client: order?.client,
+      courier: order?.courier,
     },
   });
 
   const context = useContext(TableContext);
+
   return (
-    <form
-      className={
-        mode == "edit"
-          ? "fixed z-20 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[750px] rounded-[10px]"
-          : ""
-      }
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div className=" px-4 sm:px-0 flex justify-between">
         <h3 className="text-base font-semibold leading-7 text-gray-900">
           შეკვეთის დეტალები
         </h3>
-        {mode == "edit" && context?.user?.user_data.username == "admin" && (
-          <button
-            type="button"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => setIsDelete && setIsDelete(true)}
-          >
-            შეკვეთის წაშლა
-            <TrashIcon className="block w-6 h-6" />
-          </button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
@@ -78,7 +64,7 @@ export default function OrderForm({
               <input
                 {...register("addressee_full_name", { required: true })}
                 disabled={context?.user?.user_data.user_type == "courier"}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
@@ -92,7 +78,7 @@ export default function OrderForm({
             <div className="mt-2">
               <select
                 {...register("city", { required: true })}
-                className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 disabled={context?.user?.user_data.user_type == "courier"}
               >
                 <option>თბილისი</option>
@@ -111,7 +97,7 @@ export default function OrderForm({
             <div className="mt-2">
               <input
                 {...register("address", { required: true })}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 disabled={context?.user?.user_data.user_type == "courier"}
               />
             </div>
@@ -125,10 +111,10 @@ export default function OrderForm({
             </label>
             <div className="mt-2">
               <InputMask
-                mask={"\\9\\95 999 999 999"}
+                mask={"\\9\\95 999 999 9 99"}
                 maskChar={null}
                 {...register("phone_number", { required: true })}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full  outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 disabled={context?.user?.user_data.user_type == "courier"}
               />
             </div>
@@ -144,7 +130,7 @@ export default function OrderForm({
             <div className="mt-2">
               <textarea
                 {...register("comment", { required: false })}
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
           </div>
@@ -161,7 +147,7 @@ export default function OrderForm({
                 context?.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("item_price", { required: true })}
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 ) : (
                   <p>{order?.item_price}</p>
@@ -169,7 +155,7 @@ export default function OrderForm({
               ) : (
                 <input
                   {...register("item_price", { required: true })}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               )}
             </div>
@@ -187,7 +173,7 @@ export default function OrderForm({
                 context?.user?.user_data.user_type == "admin" ? (
                   <input
                     {...register("courier_fee", { required: true })}
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 ) : (
                   <p>{order?.courier_fee}</p>
@@ -195,7 +181,7 @@ export default function OrderForm({
               ) : (
                 <input
                   {...register("courier_fee", { required: true })}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
               )}
             </div>
@@ -222,6 +208,47 @@ export default function OrderForm({
               </p>
             </div>
           </div>
+          {context.user?.user_data.user_type == "admin" && (
+            <>
+              {" "}
+              <div className="sm:col-span-3">
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  კლიენტი
+                </label>
+                <div className="mt-2">
+                  <select
+                    {...register("client", { required: true })}
+                    className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                  >
+                    {context?.clients.map((client) => (
+                      <option value={client.id}>{client.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="sm:col-span-3">
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  კურიერი
+                </label>
+                <div className="mt-2">
+                  <select
+                    {...register("courier", { required: true })}
+                    className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                  >
+                    {context?.couriers.map((courier) => (
+                      <option value={courier.id}>{courier.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
           {mode == "edit" && context?.user?.user_data.user_type != "client" && (
             <div className="sm:col-span-3">
               <label
@@ -264,12 +291,28 @@ export default function OrderForm({
           )}
         </div>
       </div>
-      <button
-        type="submit"
-        className="justify-right gap-x-1.5 mt-4 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      >
-        შენახვა
-      </button>
+      <div className="flex justify-between items-center mt-2">
+        <button
+          type="submit"
+          className="justify-right gap-x-1.5  rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          შენახვა
+        </button>
+
+        {mode == "edit" && context?.user?.user_data.username == "admin" && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => {
+              setIsDelete && setIsDelete(true);
+              setIsEdit && setIsEdit(false);
+            }}
+          >
+            შეკვეთის წაშლა
+            <TrashIcon className="block w-6 h-6" />
+          </button>
+        )}
+      </div>
     </form>
   );
 }

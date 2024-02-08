@@ -13,6 +13,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
+import { signOut } from "next-auth/react";
 
 export default function Navigation({
   currentUser,
@@ -26,8 +27,14 @@ export default function Navigation({
     navigation.push({ name: "მომხმარებლის დამატება", href: "/add-user" });
   }
   const userNavigation = [
-    { name: "პროფილი", href: "/profile" },
-    { name: "სისტემიდან გასვლა", href: "/login" },
+    { name: "პროფილი", href: "/profile", listener: () => {} },
+    {
+      name: "სისტემიდან გასვლა",
+      href: "/login",
+      listener: () => {
+        signOut();
+      },
+    },
   ];
 
   const pathName = usePathname();
@@ -37,7 +44,7 @@ export default function Navigation({
       <Disclosure as="nav" className="bg-white shadow">
         {({ open }) => (
           <>
-            <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-8xl px-2 sm:px-6 lg:px-8">
               <div className="relative flex h-16 justify-between">
                 <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                   {/* Mobile menu button */}
@@ -127,6 +134,7 @@ export default function Navigation({
                                   active ? "bg-gray-100" : "",
                                   "block px-4 py-2 text-sm text-gray-700"
                                 )}
+                                onClick={item.listener}
                               >
                                 {item.name}
                               </a>

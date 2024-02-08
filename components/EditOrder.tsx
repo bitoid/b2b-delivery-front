@@ -2,16 +2,19 @@ import { ClientOrderType } from "@/types/order";
 import React, { useContext, useState } from "react";
 import OrderForm from "./OrderForm";
 import { TableContext } from "@/context/tableContext";
+import { Modal, message } from "antd";
 
 export const DeleteModal = ({
   setIsDelete,
   handleDelete,
+  setIsEdit,
 }: {
   setIsDelete: (isDelete: boolean) => void;
   handleDelete: () => void;
+  setIsEdit?: (isEdit: boolean) => void;
 }) => {
   return (
-    <div className="fixed z-30 bg-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-5 w-[90%] max-w-[300px] rounded-[10px]">
+    <div>
       <p className="text-black">ნამდვილად გსურთ წაშლა?</p>
       <div className="flex justify-between mt-12">
         <button
@@ -22,7 +25,10 @@ export const DeleteModal = ({
         </button>
         <button
           className="inline-flex items-center gap-x-1.5 rounded-md bg-[#cc3931] px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          onClick={() => setIsDelete(false)}
+          onClick={() => {
+            setIsDelete(false);
+            setIsEdit && setIsEdit(true);
+          }}
         >
           უარყოფა
         </button>
@@ -31,12 +37,20 @@ export const DeleteModal = ({
   );
 };
 
-export default function EditOrder({ order }: { order: ClientOrderType }) {
+export default function EditOrder({
+  order,
+  setIsEdit,
+}: {
+  order: ClientOrderType;
+  setIsEdit: (isEdit: boolean) => void;
+}) {
   const context = useContext(TableContext);
   const [isDelete, setIsDelete] = useState(false);
   const handleDelete = async () => {
     const deletedOrder = context.orders.find((item) => item.id == order.id);
     try {
+      message.config({ maxCount: 1 });
+      message.loading("დაელოდეთ...");
       const response = await fetch(
         `${process.env.API_URL}/orders/${order.id}/`,
         {
@@ -53,7 +67,11 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
           context.orders.splice(context.orders.indexOf(deletedOrder), 1);
 
         context.setOrders([...context.orders]);
+        message.success("შეკვეთა წარმატებით წაიშალა");
         context.setIsEdit(false);
+        setIsDelete(false);
+      } else {
+        message.error("შეკვეთის წაშლა ვერ მოხერხდა");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -70,6 +88,8 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
     modifiedData.created_at = order.created_at;
 
     try {
+      message.config({ maxCount: 1 });
+      message.loading("დაელოდეთ...");
       const response = await fetch(
         `${process.env.API_URL}/orders/${order.id}`,
         {
@@ -85,7 +105,10 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
       if (response.ok) {
         context.orders[context.orders.indexOf(order)] = editedOrder;
         context.setOrders([...context.orders]);
+        message.success("შეკვეთა წარმატებით განახლდა");
         context.setIsEdit(false);
+      } else {
+        message.error("შეკვეთის განახლება ვერ მოხერხდა");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -93,13 +116,20 @@ export default function EditOrder({ order }: { order: ClientOrderType }) {
   };
 
   return isDelete ? (
-    <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
+    <Modal open={isDelete} footer={null} closeIcon={null}>
+      <DeleteModal
+        setIsDelete={setIsDelete}
+        handleDelete={handleDelete}
+        setIsEdit={setIsEdit}
+      />
+    </Modal>
   ) : (
     <OrderForm
       onSubmit={onSubmit}
       order={order}
       mode="edit"
       setIsDelete={setIsDelete}
+      setIsEdit={setIsEdit}
     />
   );
 }

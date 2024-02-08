@@ -7,6 +7,7 @@ import ExcelForm from "./ExcelForm";
 import OrderForm from "./OrderForm";
 import { ClientOrderType } from "@/types/order";
 import { UserType } from "@/types/user";
+import { message } from "antd";
 
 export default function AddOrder({
   user,
@@ -26,13 +27,13 @@ export default function AddOrder({
       ...data,
       sum: Number(data.item_price) + Number(data.courier_fee),
       status: "DF",
-      client: user?.user_data.profile.id || 1,
-      courier: null,
       created_at: new Date().toISOString(),
       phone_number: data.phone_number,
     };
 
     try {
+      message.config({ maxCount: 1 });
+      message.loading("დაელოდეთ...");
       const response = await fetch(`${process.env.API_URL}/orders/`, {
         method: "POST",
         body: JSON.stringify(modifiedData),
@@ -43,23 +44,26 @@ export default function AddOrder({
       });
       const newOrder = await response.json();
 
-      console.log(response);
+      console.log(newOrder);
       if (response.ok) {
         setOrders([...orders, newOrder]);
+        message.success("შეკვეთა წარმატებით დაემატა");
         setIsAdd(false);
+      } else {
+        message.error("შეკვეთის დამატება ვერ მოხერხდა");
       }
     } catch (err) {
       console.error(err);
     }
   };
   return (
-    <div className="bg-white p-6 shadow-sm ring-1 w-[90%] max-w-[824px]  ring-gray-900/5 sm:rounded-xl md:col-span-2 fixed z-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  ">
+    <div>
       <div className="flex gap-3 pb-2">
         <button
           type="button"
           className={cn(
             "rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 ",
-            manually ? "bg-gray-800 text-white" : ""
+            manually ? "bg-indigo-600 text-white" : ""
           )}
           onClick={() => setManually(true)}
         >
@@ -69,7 +73,7 @@ export default function AddOrder({
           type="button"
           className={cn(
             "rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300",
-            !manually ? "bg-gray-800 text-white" : ""
+            !manually ? "bg-indigo-600 text-white" : ""
           )}
           onClick={() => setManually(false)}
         >

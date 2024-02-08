@@ -4,7 +4,7 @@ import OrderTable from "@/components/Table";
 import { getCurrentUser } from "@/lib/session";
 import queryString from "query-string";
 import SearchParamsType from "@/types/searchParams";
-import { getCouriers } from "../users/page";
+import { getClients, getCouriers } from "../users/page";
 
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
@@ -25,7 +25,13 @@ export default async function OrdersPage({
 
   const couriers =
     user?.user_data.user_type == "admin" ? await getCouriers(user?.token) : [];
-  console.log("logg", couriers);
+
+  const clients =
+    user?.user_data.user_type == "admin" ||
+    user?.user_data.user_type == "courier"
+      ? await getClients(user?.token)
+      : [];
+  console.log("logg", clients);
   return (
     <div className="rounded-lg bg-white px-5 py-6 shadow sm:px-6 ">
       <OrderTable
@@ -34,6 +40,7 @@ export default async function OrdersPage({
         searchParams={searchParams}
         user={user}
         couriers={couriers}
+        clients={clients}
       />
     </div>
   );

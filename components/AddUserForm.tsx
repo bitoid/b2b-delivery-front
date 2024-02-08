@@ -26,6 +26,8 @@ export default function AddUserForm({ token }: { token: string }) {
     if (selected == "კლიენტი") {
       console.log(data);
       try {
+        message.config({ maxCount: 1 });
+        message.loading("დაელოდეთ...");
         const response = await fetch(`${process.env.API_URL}/clients/`, {
           method: "POST",
           body: JSON.stringify(data),
@@ -49,6 +51,8 @@ export default function AddUserForm({ token }: { token: string }) {
       delete (data as Partial<FormData>).representative_full_name;
 
       try {
+        message.config({ maxCount: 1 });
+        message.loading("დაელოდეთ...");
         const response = await fetch(`${process.env.API_URL}/couriers/`, {
           method: "POST",
           body: JSON.stringify(data),

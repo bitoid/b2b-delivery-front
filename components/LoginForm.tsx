@@ -1,6 +1,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { signIn } from "next-auth/react";
-
+import { message } from "antd";
+import { useRouter } from "next/navigation";
 type Inputs = {
   username: string;
   password: string;
@@ -14,12 +15,22 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<Inputs>();
 
+  const router = useRouter();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    await signIn("credentials", {
+    message.config({ maxCount: 1 });
+    message.loading("იტვირთება...");
+    const response = await signIn("credentials", {
       username: data.username,
       password: data.password,
-      callbackUrl: "/orders",
+
+      redirect: false,
     });
+
+    if (response?.ok) {
+      router.push("/orders");
+    } else {
+      message.error("მომხარებელი ან პაროლი არასწორია");
+    }
   };
 
   return (

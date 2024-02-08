@@ -4,6 +4,8 @@ import { createContext } from "react";
 const initialContext: OrdersContextProps = {
   orders: [],
   user: undefined,
+  couriers: [],
+  clients: [],
   setIsEdit: () => {},
   setOrders: () => {},
 };
