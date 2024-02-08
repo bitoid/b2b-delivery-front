@@ -11,6 +11,7 @@ import {
   DatePicker,
   DatePickerProps,
   Typography,
+  message,
 } from "antd";
 import type { ColumnsType, TableProps } from "antd/es/table";
 import { ClientOrderType } from "@/types/order";
@@ -30,7 +31,7 @@ import { EditFilled } from "@ant-design/icons";
 import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
-import { UserType } from "@/types/user";
+import { UserInfoType, UserType } from "@/types/user";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import AddOrder from "./AddOrder";
 import { RangePickerProps } from "antd/es/date-picker";
@@ -58,12 +59,13 @@ const OrderTable: React.FC<{
   filteredOrders: ClientOrderType[];
   searchParams: SearchParamsType;
   user: UserType | undefined;
-}> = ({ data, searchParams, user, filteredOrders }) => {
+  couriers: UserInfoType[];
+}> = ({ data, searchParams, user, filteredOrders, couriers }) => {
   let storedQuery = null;
   const { RangePicker } = DatePicker;
   const { Text } = Typography;
 
-  const [orders, setOrders] = useState<ClientOrderType[]>(filteredOrders);
+  const [orders, setOrders] = useState<ClientOrderType[]>(filteredOrders || []);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -144,7 +146,7 @@ const OrderTable: React.FC<{
   }, []);
 
   useEffect(() => {
-    setOrders(filteredOrders);
+    setOrders(filteredOrders || []);
   }, [searchParams]);
 
   //optimezed antd for nextjs
@@ -174,6 +176,31 @@ const OrderTable: React.FC<{
       title: "კოდი",
       dataIndex: "id",
       width: "80px",
+    },
+    {
+      title: "კლიენტი",
+      dataIndex: "client",
+      width: "110px",
+      filters: getUniques(data, "client_name"),
+      render: (text: string, record: ClientOrderType) => record.client_name,
+      filterSearch: true,
+      filteredValue: filteredInfo?.client || null,
+
+      defaultFilteredValue: getDefaultFilter(storedQuery, "client"),
+    },
+    {
+      title: "კურიერი",
+      dataIndex: "courier",
+
+      width: "110px",
+      filters:
+        couriers?.map((item) => ({ text: item.name, value: item.id })) || [],
+      render: (text: string, record: ClientOrderType) =>
+        couriers?.find((item) => item.id == record.courier)?.name || "...",
+      filterSearch: true,
+      filteredValue: filteredInfo?.courier || null,
+
+      defaultFilteredValue: getDefaultFilter(storedQuery, "courier"),
     },
     {
       title: "ქალაქი",
@@ -227,7 +254,7 @@ const OrderTable: React.FC<{
 
     {
       title: "სტატუსი",
-      dataIndex: "status",
+      dataIndex: "staged_status",
       width: "150px",
       filters: [
         { text: "სტატუსის გარეშე", value: "DF" },
@@ -236,23 +263,23 @@ const OrderTable: React.FC<{
         { text: "ვერ ჩაბარდა", value: "RD" },
         { text: "დაბრუნებულია", value: "BK" },
       ],
-      filteredValue: filteredInfo?.status || null,
+      filteredValue: filteredInfo?.staged_status || null,
 
       render: (text, record) => (
         <ConfigProvider
           theme={{
             components: {
               Select: {
-                optionSelectedBg: getColorForStatus(record.status),
+                optionSelectedBg: getColorForStatus(record.staged_status),
                 optionSelectedColor: "white",
-                selectorBg: getColorForStatus(record.status),
+                selectorBg: getColorForStatus(record.staged_status),
                 borderRadius: 100,
               },
             },
           }}
         >
           <Select
-            value={record.status}
+            value={record.staged_status}
             className={`w-[120px]`}
             dropdownStyle={{ width: "190px" }}
             onChange={(value) => handleStatusChange(record.id, value)}
@@ -442,11 +469,15 @@ const OrderTable: React.FC<{
   ];
 
   if (user?.user_data.user_type == "courier") {
-    columns.splice(2, 1);
-    columns.splice(2, 1);
+    columns.splice(3, 3);
   } else {
     columns.splice(0, 1);
   }
+
+  if (user?.user_data.user_type == "client") {
+    columns.splice(1, 2);
+  }
+
   const rowSelection: TableRowSelection<ClientOrderType> = {
     selectedRowKeys,
     onChange: onSelectChange,
@@ -465,8 +496,29 @@ const OrderTable: React.FC<{
       {
         key: "send",
         text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
-        onSelect: () => {
-          // edRowKeys);
+        onSelect: async () => {
+          try {
+            const response = await fetch(
+              `${process.env.API_URL}/orders/send_bulk_sms/`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Token ${user?.token}`,
+                },
+                body: JSON.stringify({ order_ids: selectedRowKeys }),
+              }
+            );
+
+            if (response.ok) {
+              message.success("მესიჯი წარმატებით გაიგზავნა");
+            } else {
+              message.error("მესიჯის გაგზავნა ვერ მოხერხდა");
+            }
+            console.log(response);
+          } catch (err) {
+            console.log(err);
+          }
         },
       },
       {
@@ -539,13 +591,13 @@ const OrderTable: React.FC<{
           "Content-Type": "application/json",
           Authorization: `Token ${user?.token}`,
         },
-        body: JSON.stringify({ status: value }),
+        body: JSON.stringify({ staged_status: value }),
       });
 
       if (response.ok) {
         setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === key ? { ...order, status: value } : order
+          prevOrders?.map((order) =>
+            order.id === key ? { ...order, staged_status: value } : order
           )
         );
       }
@@ -716,7 +768,7 @@ const OrderTable: React.FC<{
       >
         <SortableContext
           // rowKey array
-          items={orders.map((i) => i.id)}
+          items={orders?.map((i) => i.id)}
           strategy={verticalListSortingStrategy}
         >
           <Table
@@ -824,7 +876,7 @@ const OrderTable: React.FC<{
       {user?.user_data.user_type != "courier" && (
         <button
           onClick={() => setIsAdd(true)}
-          className="mt-[-50px] flex items-center bg-gray-200 py-1 px-2 rounded-[20px] hover:opacity-70 pointer relative z-5"
+          className="mt-[-50px] flex items-center   bg-indigo-600 py-2 px-3 rounded-[20px] text-white hover:opacity-70 pointer relative z-5"
         >
           დამატება
           <PlusIcon className="h-5 w-5" aria-hidden="true" />

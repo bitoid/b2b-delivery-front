@@ -4,6 +4,7 @@ import OrderTable from "@/components/Table";
 import { getCurrentUser } from "@/lib/session";
 import queryString from "query-string";
 import SearchParamsType from "@/types/searchParams";
+import { getCouriers } from "../users/page";
 
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
@@ -21,6 +22,10 @@ export default async function OrdersPage({
     searchParams
   );
   const orders: ClientOrderType[] = await getFilteredOrders(user?.token);
+
+  const couriers =
+    user?.user_data.user_type == "admin" ? await getCouriers(user?.token) : [];
+  console.log("logg", couriers);
   return (
     <div className="rounded-lg bg-white px-5 py-6 shadow sm:px-6 ">
       <OrderTable
@@ -28,6 +33,7 @@ export default async function OrdersPage({
         filteredOrders={filteredOrders}
         searchParams={searchParams}
         user={user}
+        couriers={couriers}
       />
     </div>
   );
@@ -55,7 +61,7 @@ const getOrders = async (
     }
 
     let data = await response.json();
-    console.log(data);
+
     return data;
   } catch (err) {
     console.log(err);
@@ -76,7 +82,6 @@ const getFilteredOrders = async (token: string | undefined) => {
     }
 
     let data = await response.json();
-    console.log(data);
     return data;
   } catch (err) {
     console.log(err);

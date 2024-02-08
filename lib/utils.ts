@@ -16,7 +16,10 @@ export function getUniques(data: ClientOrderType[], fieldName: string) {
         index === self.findIndex((t: any) => t[fieldName] === item[fieldName])
     )
     .map((item: any) => {
-      return { text: item[fieldName], value: item[fieldName] };
+      return {
+        text: item[fieldName],
+        value: fieldName == "client_name" ? item["client"] : item[fieldName],
+      };
     });
 }
 export function getDefaultFilter(storedQuery: string | null, key: string) {

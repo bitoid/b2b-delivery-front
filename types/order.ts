@@ -3,6 +3,7 @@ import { UserType } from "./user";
 interface ClientOrderType {
   sum: number;
   status: string;
+  staged_status: string;
   client: number | null;
   id: number;
   city: string;
@@ -13,6 +14,11 @@ interface ClientOrderType {
   item_price: number;
   courier_fee: number;
   created_at: string;
+  courier: number | null;
+  client_name: string;
+  courier_name: string;
+  updated_at: string;
+  order_position: number;
 }
 
 interface CommentProps {

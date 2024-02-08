@@ -15,3 +15,15 @@ export interface UserType {
     user_type: string;
   };
 }
+
+export interface UserInfoType {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+    email: string;
+    is_staff: boolean;
+  };
+  name: string;
+  phone_number: string;
+}

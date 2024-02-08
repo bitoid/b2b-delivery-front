@@ -29,6 +29,7 @@ export default function AddOrder({
       client: user?.user_data.profile.id || 1,
       courier: null,
       created_at: new Date().toISOString(),
+      phone_number: data.phone_number,
     };
 
     try {
