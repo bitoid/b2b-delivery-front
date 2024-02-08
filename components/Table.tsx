@@ -98,13 +98,13 @@ const OrderTable: React.FC<{
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [filteredInfo, setFilteredInfo] =
     useState<Record<string, FilterValue | null>>();
-  const [sortedInfo, setSortedInfo] = useState<SorterResult<any>>();
+  const [sortedInfo, setSortedInfo] = useState<SorterResult<ClientOrderType>>();
   const [defaultCurrent, setDefaultCurrent] = useState(1);
 
   const router = useRouter();
 
   useEffect(() => {
-    let storedQuery = localStorage.getItem("query");
+    storedQuery = localStorage.getItem("query");
     setFilteredInfo(
       window.localStorage.getItem("filters")
         ? JSON.parse(window.localStorage.getItem("filters") || "")
@@ -124,9 +124,12 @@ const OrderTable: React.FC<{
       );
     }
 
-    let modifiedQuery: SearchParamsType = queryString.parse(storedQuery || "", {
-      arrayFormat: "comma",
-    });
+    const modifiedQuery: SearchParamsType = queryString.parse(
+      storedQuery || "",
+      {
+        arrayFormat: "comma",
+      }
+    );
     if (modifiedQuery["item_price"]?.split("to")[0])
       setMinPrice(Number(modifiedQuery["item_price"]?.split("to")[0]));
 
@@ -506,6 +509,10 @@ const OrderTable: React.FC<{
         text: "მონიშნული შეკვეთების ადრესატებისთვის მესიჯების გაგზავნა",
         onSelect: async () => {
           try {
+            if (selectedRowKeys.length == 0) {
+              message.warning("შეკვეთები არჩეული არ გაქვთ");
+              return;
+            }
             message.config({ maxCount: 1 });
             message.loading("დაელოდეთ...");
             const response = await fetch(
@@ -535,6 +542,10 @@ const OrderTable: React.FC<{
         key: "print",
         text: "მონიშნული შეკვეთების დაპრინტვა",
         onSelect: () => {
+          if (selectedRowKeys.length == 0) {
+            message.warning("შეკვეთები არჩეული არ გაქვთ");
+            return;
+          }
           const printWindow = window.open("", "_blank");
           const columnNames = {
             id: "კოდი",
@@ -560,14 +571,16 @@ const OrderTable: React.FC<{
           printWindow?.document.write("</tr>");
 
           interface NewClientOrderType extends ClientOrderType {
-            [key: string]: any;
+            [key: string]: string | number | null;
           }
           // Write table rows
-          selectedRows.forEach((record: NewClientOrderType) => {
+          selectedRows.forEach((record: ClientOrderType) => {
             printWindow?.document.write("<tr style=`border: 1px solid black`>");
             Object.keys(columnNames).forEach((key) => {
               printWindow?.document.write(
-                `<td style="text-align: center; border: 1px solid black">${record[key]}</td>`
+                `<td style="text-align: center; border: 1px solid black">${
+                  (record as NewClientOrderType)[key]
+                }</td>`
               );
             });
             printWindow?.document.write("</tr>");
@@ -611,8 +624,6 @@ const OrderTable: React.FC<{
           )
         );
       }
-
-      const data = await response.json();
     } catch (error) {
       console.error("Error:", error);
     }
@@ -630,9 +641,7 @@ const OrderTable: React.FC<{
   ) => {
     setDefaultCurrent(pagination.current as number);
     setFilteredInfo(filters);
-    setSortedInfo(
-      sorter as SorterResult<{ item_price: number; courierPrice: number }>
-    );
+    setSortedInfo(sorter as SorterResult<ClientOrderType>);
     localStorage.setItem("filters", JSON.stringify(filters));
     localStorage.setItem("sorteds", JSON.stringify(sorter));
     const filteredSorter: Record<string, SortOrder | undefined> = {};
@@ -658,7 +667,7 @@ const OrderTable: React.FC<{
       ...filteredSorter,
       ...filteredFilters,
     };
-    if (query.hasOwnProperty("column")) {
+    if (Object.prototype.hasOwnProperty.call(query, "column")) {
       delete query["column"];
     }
     if (!query["order"]) {
@@ -910,22 +919,24 @@ const OrderTable: React.FC<{
           </button>
         )}
 
-        <>
-          <Modal
-            open={isAdd}
-            onOk={() => setIsAdd(false)}
-            onCancel={() => setIsAdd(false)}
-            width={900}
-            footer={null}
-          >
-            <AddOrder
-              user={user}
-              setOrders={setOrders}
-              orders={orders}
-              setIsAdd={setIsAdd}
-            />{" "}
-          </Modal>
-        </>
+        {isAdd && (
+          <>
+            <Modal
+              open={isAdd}
+              onOk={() => setIsAdd(false)}
+              onCancel={() => setIsAdd(false)}
+              width={900}
+              footer={null}
+            >
+              <AddOrder
+                user={user}
+                setOrders={setOrders}
+                orders={orders}
+                setIsAdd={setIsAdd}
+              />{" "}
+            </Modal>
+          </>
+        )}
 
         <Modal
           open={isDelete}

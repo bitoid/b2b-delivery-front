@@ -1,3 +1,4 @@
+import { UserType } from "@/types/user";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 const authOptions: NextAuthOptions = {
@@ -42,7 +43,7 @@ const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user as any; // Add the user object from the token to the session
+      session.user = token.user as UserType; // Add the user object from the token to the session
       return session;
     },
   },

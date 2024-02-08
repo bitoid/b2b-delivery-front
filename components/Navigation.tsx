@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import React, { Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -60,13 +60,14 @@ export default function Navigation({
                 </div>
                 <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                   <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    {navigation.map((item) => (
+                    {navigation.map((item, index) => (
                       <Link
                         href={item.href}
                         className={cn(
                           "inline-flex items-center border-indigo-500 px-1 pt-1 text-sm font-bold text-gray-600 tracking-wide",
                           pathName == item.href ? "border-b-2" : ""
                         )}
+                        key={index}
                       >
                         {item.name}
                       </Link>
@@ -125,8 +126,8 @@ export default function Navigation({
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items className="absolute right-0 z-10 mt-7 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        {userNavigation.map((item) => (
-                          <Menu.Item>
+                        {userNavigation.map((item, index) => (
+                          <Menu.Item key={index}>
                             {({ active }) => (
                               <a
                                 href={item.href}
@@ -151,8 +152,9 @@ export default function Navigation({
             <Disclosure.Panel className="sm:hidden">
               <div className="space-y-1 pb-4 pt-2">
                 {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
-                {navigation.map((item) => (
+                {navigation.map((item, index) => (
                   <Disclosure.Button
+                    key={index}
                     as={"a"}
                     href={item.href}
                     className={cn(

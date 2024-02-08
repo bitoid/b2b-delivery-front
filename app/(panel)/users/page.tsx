@@ -1,16 +1,16 @@
-import { getCurrentUser } from "@/lib/session";
+// import { getCurrentUser } from "@/lib/session";
 import React from "react";
 
 export default async function page() {
-  const user = await getCurrentUser();
-  const couriers = await getCouriers(user?.token);
-  const clients = await getClients(user?.token);
+  //   const user = await getCurrentUser();
+  //   const couriers = await getCouriers(user?.token);
+  //   const clients = await getClients(user?.token);
   return <div>page</div>;
 }
 
 export async function getCouriers(token: string | undefined) {
   try {
-    let response = await fetch(`${process.env.API_URL}/couriers/`, {
+    const response = await fetch(`${process.env.API_URL}/couriers/`, {
       cache: "no-store",
       headers: {
         Authorization: `Token ${token}`,
@@ -25,7 +25,7 @@ export async function getCouriers(token: string | undefined) {
 
 export async function getClients(token: string | undefined) {
   try {
-    let response = await fetch(`${process.env.API_URL}/clients/`, {
+    const response = await fetch(`${process.env.API_URL}/clients/`, {
       cache: "no-store",
       headers: {
         Authorization: `Token ${token}`,

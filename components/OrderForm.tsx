@@ -25,7 +25,7 @@ export default function OrderForm({
     handleSubmit,
     watch,
     control,
-    formState: { errors },
+    // formState: { errors },
   } = useForm<ClientOrderType>({
     defaultValues: {
       status: mode == "add" ? "DF" : order?.status,
@@ -224,7 +224,9 @@ export default function OrderForm({
                     className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                   >
                     {context?.clients.map((client) => (
-                      <option value={client.id}>{client.name}</option>
+                      <option value={client.id} key={client.id}>
+                        {client.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -242,7 +244,9 @@ export default function OrderForm({
                     className="block w-full outline-none  bg-gray-50 rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                   >
                     {context?.couriers.map((courier) => (
-                      <option value={courier.id}>{courier.name}</option>
+                      <option value={courier.id} key={courier.id}>
+                        {courier.name}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -296,7 +300,7 @@ export default function OrderForm({
           type="submit"
           className="justify-right gap-x-1.5  rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          შენახვა
+          {mode == "edit" ? "შენახვა" : "დამატება"}
         </button>
 
         {mode == "edit" && context?.user?.user_data.username == "admin" && (

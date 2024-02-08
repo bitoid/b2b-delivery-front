@@ -12,7 +12,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
 
-    formState: { errors },
+    // formState: { errors },
   } = useForm<Inputs>();
 
   const router = useRouter();

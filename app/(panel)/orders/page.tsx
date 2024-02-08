@@ -56,7 +56,7 @@ const getOrders = async (
   console.log(query);
 
   try {
-    let response = await fetch(`${process.env.API_URL}/orders?${query}`, {
+    const response = await fetch(`${process.env.API_URL}/orders?${query}`, {
       cache: "no-store",
       headers: {
         Authorization: `Token ${token}`,
@@ -67,7 +67,7 @@ const getOrders = async (
       throw new Error("Network response was not ok");
     }
 
-    let data = await response.json();
+    const data = await response.json();
 
     return data;
   } catch (err) {
@@ -77,7 +77,7 @@ const getOrders = async (
 
 const getFilteredOrders = async (token: string | undefined) => {
   try {
-    let response = await fetch(`${process.env.API_URL}/orders`, {
+    const response = await fetch(`${process.env.API_URL}/orders`, {
       cache: "no-store",
       headers: {
         Authorization: `Token ${token}`,
@@ -88,7 +88,7 @@ const getFilteredOrders = async (token: string | undefined) => {
       throw new Error("Network response was not ok");
     }
 
-    let data = await response.json();
+    const data = await response.json();
     return data;
   } catch (err) {
     console.log(err);

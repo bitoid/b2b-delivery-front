@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { PencilIcon } from "@heroicons/react/24/outline";
 import { UserType } from "@/types/user";
 
 export default function ProfileForm({ user }: { user: UserType | undefined }) {
