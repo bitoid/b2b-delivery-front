@@ -1,7 +1,7 @@
 import { getColorForStatus } from "@/lib/utils";
 import { ClientOrderType } from "@/types/order";
 import { ConfigProvider, Select } from "antd";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "@/context/tableContext";
 import { TrashIcon } from "@heroicons/react/20/solid";
@@ -25,6 +25,7 @@ export default function OrderForm({
     handleSubmit,
     watch,
     control,
+    reset,
     // formState: { errors },
   } = useForm<ClientOrderType>({
     defaultValues: {
@@ -40,6 +41,23 @@ export default function OrderForm({
       courier: order?.courier,
     },
   });
+
+  console.log(order);
+
+  useEffect(() => {
+    reset({
+      status: mode == "add" ? "DF" : order?.status,
+      address: order?.address,
+      city: order?.city,
+      comment: order?.comment,
+      courier_fee: order?.courier_fee,
+      item_price: order?.item_price,
+      phone_number: order?.phone_number,
+      addressee_full_name: order?.addressee_full_name,
+      client: order?.client,
+      courier: order?.courier,
+    });
+  }, []);
 
   const context = useContext(TableContext);
 

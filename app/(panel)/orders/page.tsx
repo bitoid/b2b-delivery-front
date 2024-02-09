@@ -17,21 +17,18 @@ export default async function OrdersPage({
 }) {
   const user = await getCurrentUser();
 
-  const filteredOrders: ClientOrderType[] = await getOrders(
-    user?.token,
-    searchParams
-  );
-  const orders: ClientOrderType[] = await getFilteredOrders(user?.token);
+  const filteredOrders: ClientOrderType[] =
+    (await getOrders(user?.token, searchParams)) || [];
+  const orders: ClientOrderType[] =
+    (await getFilteredOrders(user?.token)) || [];
 
   const couriers =
     user?.user_data.user_type == "admin" ? await getCouriers(user?.token) : [];
 
   const clients =
-    user?.user_data.user_type == "admin" ||
-    user?.user_data.user_type == "courier"
-      ? await getClients(user?.token)
-      : [];
-  console.log("logg", clients);
+    user?.user_data.user_type == "admin" ? await getClients(user?.token) : [];
+
+  console.log(clients);
   return (
     <div className="rounded-lg bg-white px-5 py-6 shadow sm:px-6 ">
       <OrderTable
@@ -53,7 +50,6 @@ const getOrders = async (
   const query = queryString.stringify(searchParams, {
     arrayFormat: "comma",
   });
-  console.log(query);
 
   try {
     const response = await fetch(`${process.env.API_URL}/orders?${query}`, {

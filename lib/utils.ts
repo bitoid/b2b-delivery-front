@@ -23,7 +23,10 @@ export function getUniques<T extends keyof ClientOrderType>(
     .map((item: ClientOrderType) => {
       return {
         text: item[fieldName],
-        value: item[fieldName],
+        value:
+          fieldName == "client_name" && item["client"]
+            ? item["client"]
+            : item[fieldName],
       };
     });
 }

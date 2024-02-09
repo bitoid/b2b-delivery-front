@@ -1,10 +1,11 @@
 // import { getCurrentUser } from "@/lib/session";
-import React from "react";
 
 export default async function page() {
-  //   const user = await getCurrentUser();
-  //   const couriers = await getCouriers(user?.token);
-  //   const clients = await getClients(user?.token);
+  // const user = await getCurrentUser();
+  // const couriers = await getCouriers(user?.token);
+  // const clients = await getClients(user?.token);
+
+  // console.log(couriers, clients);
   return <div>page</div>;
 }
 

@@ -186,10 +186,8 @@ const OrderTable: React.FC<{
       title: "კლიენტი",
       dataIndex: "client",
       width: "110px",
-      filters:
-        clients?.map((item) => ({ text: item.name, value: item.id })) || [],
-      render: (text: string, record: ClientOrderType) =>
-        clients?.find((item) => item.id == record.client)?.name || "...",
+      filters: getUniques(data, "client_name"),
+      render: (text: string, record: ClientOrderType) => record.client_name,
       filterSearch: true,
       filteredValue: filteredInfo?.client || null,
 
@@ -634,6 +632,7 @@ const OrderTable: React.FC<{
     setIsEdit(true);
   };
 
+  console.log(editInfo);
   const onChange: TableProps<ClientOrderType>["onChange"] = (
     pagination,
     filters,
@@ -893,7 +892,7 @@ const OrderTable: React.FC<{
       <TableContext.Provider
         value={{ orders, setOrders, user, setIsEdit, couriers, clients }}
       >
-        {editInfo && (
+        {editInfo && isEdit && (
           <>
             {/* <BlackScreen setIsBlackScreen={setIsEdit} isBlackScreen={isEdit} /> */}
 

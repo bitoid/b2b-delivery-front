@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     message.config({ maxCount: 1 });
-    message.loading("იტვირთება...");
+
     const response = await signIn("credentials", {
       username: data.username,
       password: data.password,
@@ -27,7 +27,9 @@ export default function LoginPage() {
     });
 
     if (response?.ok) {
-      router.push("/orders");
+      message.loading("იტვირთება...", 0.5, () => {
+        router.push("/orders");
+      });
     } else {
       message.error("მომხარებელი ან პაროლი არასწორია");
     }
