@@ -12,12 +12,10 @@ export default function OrderForm({
   onSubmit,
   mode,
   setIsDelete,
-  setIsEdit,
 }: {
   order: ClientOrderType | null;
   onSubmit: (data: ClientOrderType) => void;
   setIsDelete?: (isDelete: boolean) => void;
-  setIsEdit?: (isEdit: boolean) => void;
   mode: "edit" | "add";
 }) {
   const {
@@ -327,7 +325,6 @@ export default function OrderForm({
             className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={() => {
               setIsDelete && setIsDelete(true);
-              setIsEdit && setIsEdit(false);
             }}
           >
             შეკვეთის წაშლა

@@ -259,7 +259,8 @@ const OrderTable: React.FC<{
 
     {
       title: "სტატუსი",
-      dataIndex: "staged_status",
+      dataIndex:
+        user?.user_data.user_type == "courier" ? "staged_status" : "status",
       width: "150px",
       filters: [
         { text: "სტატუსის გარეშე", value: "DF" },
@@ -268,23 +269,38 @@ const OrderTable: React.FC<{
         { text: "ვერ ჩაბარდა", value: "RD" },
         { text: "დაბრუნებულია", value: "BK" },
       ],
-      filteredValue: filteredInfo?.staged_status || null,
+      filteredValue:
+        user?.user_data.user_type == "courier"
+          ? filteredInfo?.staged_status
+          : filteredInfo?.status || null,
 
       render: (text, record) => (
         <ConfigProvider
           theme={{
             components: {
               Select: {
-                optionSelectedBg: getColorForStatus(record.staged_status),
+                optionSelectedBg: getColorForStatus(
+                  user?.user_data.user_type == "courier"
+                    ? record.staged_status
+                    : record.status
+                ),
                 optionSelectedColor: "white",
-                selectorBg: getColorForStatus(record.staged_status),
+                selectorBg: getColorForStatus(
+                  user?.user_data.user_type == "courier"
+                    ? record.staged_status
+                    : record.status
+                ),
                 borderRadius: 100,
               },
             },
           }}
         >
           <Select
-            value={record.staged_status}
+            value={
+              user?.user_data.user_type == "courier"
+                ? record.staged_status
+                : record.status
+            }
             className={`w-[120px]`}
             dropdownStyle={{ width: "190px" }}
             onChange={(value) => handleStatusChange(record.id, value)}

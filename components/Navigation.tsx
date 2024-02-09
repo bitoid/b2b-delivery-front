@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -14,11 +14,17 @@ import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { signOut } from "next-auth/react";
+import { NotificationType } from "@/types/notificaition";
+import { ClientOrderType } from "@/types/order";
 
 export default function Navigation({
   currentUser,
+  ordersData,
+  notificationsData,
 }: {
   currentUser: UserType | undefined;
+  ordersData: ClientOrderType[];
+  notificationsData: NotificationType[];
 }) {
   const navigation = currentUser
     ? [{ name: "გაგზავნილი შეკვეთები", href: "/orders" }]
@@ -38,6 +44,15 @@ export default function Navigation({
   ];
 
   const pathName = usePathname();
+
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [orders, setOrders] = useState<ClientOrderType[]>([]);
+  useEffect(() => {
+    setNotifications(notificationsData);
+    setOrders(ordersData);
+  }, []);
+
+  console.log(notificationsData);
 
   return (
     <>
@@ -94,8 +109,50 @@ export default function Navigation({
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <div>blablabla</div>
+                      <Menu.Items className="absolute  w-[700px] right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ul>
+                          {notifications.map((notification) => {
+                            return (
+                              <li key={notification.order}>
+                                <span>
+                                  შეიცვალა შეკვეთის (კოდით {notification.order})
+                                  სტატუსი:{" "}
+                                  {
+                                    orders?.find(
+                                      (item) => item.id == notification.order
+                                    )?.staged_status
+                                  }{" "}
+                                </span>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const response = await fetch(
+                                        `${process.env.API_URL}/orders/${notification.order}/approve_status/`,
+                                        {
+                                          method: "POST",
+                                          headers: {
+                                            Authorization: `Token ${currentUser?.token}`,
+                                          },
+                                        }
+                                      );
+                                      if (response.ok) {
+                                        const newNotifications =
+                                          notifications.filter(
+                                            (item) => item.id != notification.id
+                                          );
+                                        setNotifications(newNotifications);
+                                      }
+                                    } catch (err) {
+                                      console.log(err);
+                                    }
+                                  }}
+                                >
+                                  დადასტურება
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
                       </Menu.Items>
                     </Transition>
                   </Menu>

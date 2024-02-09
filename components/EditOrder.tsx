@@ -46,6 +46,7 @@ export default function EditOrder({
 }) {
   const context = useContext(TableContext);
   const [isDelete, setIsDelete] = useState(false);
+  console.log(isDelete);
   const handleDelete = async () => {
     const deletedOrder = context.orders.find((item) => item.id == order.id);
     try {
@@ -115,21 +116,22 @@ export default function EditOrder({
     }
   };
 
-  return isDelete ? (
-    <Modal open={isDelete} footer={null} closeIcon={null}>
-      <DeleteModal
+  return (
+    <>
+      <Modal open={isDelete} footer={null} closeIcon={null} centered>
+        <DeleteModal
+          setIsDelete={setIsDelete}
+          handleDelete={handleDelete}
+          setIsEdit={setIsEdit}
+        />
+      </Modal>
+
+      <OrderForm
+        onSubmit={onSubmit}
+        order={order}
+        mode="edit"
         setIsDelete={setIsDelete}
-        handleDelete={handleDelete}
-        setIsEdit={setIsEdit}
       />
-    </Modal>
-  ) : (
-    <OrderForm
-      onSubmit={onSubmit}
-      order={order}
-      mode="edit"
-      setIsDelete={setIsDelete}
-      setIsEdit={setIsEdit}
-    />
+    </>
   );
 }

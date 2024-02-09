@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { getOrders } from "./orders/page";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -15,10 +16,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
+  const orders = await getOrders(user?.token);
+  const notifications =
+    user?.user_data.user_type == "admin"
+      ? await getNotifications(user?.token)
+      : [];
   return (
     <html lang="en" className="bg-gray-200">
       <body className={cn(inter.className)}>
-        <Navigation currentUser={user} />
+        <Navigation
+          currentUser={user}
+          ordersData={orders}
+          notificationsData={notifications}
+        />
 
         <main className="mt-10">
           <div className="mx-auto  px-4 pb-12 sm:px-6 lg:px-8">{children}</div>
@@ -26,4 +36,19 @@ export default async function RootLayout({
       </body>
     </html>
   );
+}
+
+async function getNotifications(token: string | undefined) {
+  try {
+    const response = await fetch(`${process.env.API_URL}/notifications/`, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
 }

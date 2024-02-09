@@ -18,9 +18,8 @@ export default async function OrdersPage({
   const user = await getCurrentUser();
 
   const filteredOrders: ClientOrderType[] =
-    (await getOrders(user?.token, searchParams)) || [];
-  const orders: ClientOrderType[] =
-    (await getFilteredOrders(user?.token)) || [];
+    (await getFilteredOrders(user?.token, searchParams)) || [];
+  const orders: ClientOrderType[] = (await getOrders(user?.token)) || [];
 
   const couriers =
     user?.user_data.user_type == "admin" ? await getCouriers(user?.token) : [];
@@ -28,7 +27,7 @@ export default async function OrdersPage({
   const clients =
     user?.user_data.user_type == "admin" ? await getClients(user?.token) : [];
 
-  console.log(clients);
+  console.log(orders);
   return (
     <div className="rounded-lg bg-white px-5 py-6 shadow sm:px-6 ">
       <OrderTable
@@ -43,7 +42,7 @@ export default async function OrdersPage({
   );
 }
 
-const getOrders = async (
+const getFilteredOrders = async (
   token: string | undefined,
   searchParams: SearchParamsType
 ) => {
@@ -71,7 +70,7 @@ const getOrders = async (
   }
 };
 
-const getFilteredOrders = async (token: string | undefined) => {
+export const getOrders = async (token: string | undefined) => {
   try {
     const response = await fetch(`${process.env.API_URL}/orders`, {
       cache: "no-store",
