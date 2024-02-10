@@ -1,148 +1,221 @@
 "use client";
 import { useState } from "react";
 import { UserType } from "@/types/user";
+import { useForm } from "react-hook-form";
+import { message } from "antd";
 
 export default function ProfileForm({ user }: { user: UserType | undefined }) {
   const [isEdit, setIsEdit] = useState(false);
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<UserType>({
+    defaultValues: {
+      user_data: {
+        username: user?.user_data.username,
+        profile: {
+          name: user?.user_data.profile.name,
+          email: user?.user_data.profile.email,
+          phone_number: user?.user_data.profile.phone_number,
+          representative_full_name:
+            user?.user_data.profile.representative_full_name,
+        },
+      },
+    },
+  });
 
-  const userProfile = user?.user_data.profile;
+  const onSubmit = async (data: UserType) => {
+    console.log(data);
+    try {
+      const response = await fetch(
+        `${process.env.API_URL}/users/${user?.user_data.id}/`,
+        {
+          method: "PUT",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${user?.token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        message.success("მომხმარებელი წარმატებით განახლდა");
+        setIsEdit(false);
+      } else {
+        message.error("მომხმარებლის განახლება ვერ მოხერხდა");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  const handleButtonClick = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault(); // Prevent form submission
+
+    if (isEdit) {
+      // If isEdit is true, run onSubmit
+      await handleSubmit(onSubmit)();
+    } else {
+      // If isEdit is false, set it to true
+      setIsEdit(true);
+    }
+  };
+
+  console.log(user);
   return (
-    <div className="mx-auto max-w-2xl space-y-16 lg:mx-0 lg:max-w-none">
-      {user?.user_data.user_type == "client" && (
-        <div>
-          <div className="flex justify-between">
-            <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
-              კომპანიის ინფორმაცია
-            </h2>
-
-            {/* <button
-            type="button"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => setIsEdit(true)}
-          >
-            განახლება
-            <PencilIcon className="block w-6 h-6 company-icon" />
-          </button> */}
-          </div>
-
-          <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-            <div className="pt-6 sm:flex">
-              <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-                დასახელება
-              </dt>
-              <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                <input
-                  type="text"
-                  name="company"
-                  id="company"
-                  autoComplete="given-name"
-                  disabled={!isEdit}
-                  defaultValue={userProfile?.name}
-                  className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-                />
-              </dd>
-            </div>
-          </dl>
-        </div>
-      )}
-
-      <div>
-        <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900">
-          {user?.user_data.user_type == "client"
-            ? "საკონტაქტო პირის ინფორმაცია"
-            : "პირადი ინფორმაცია"}
-        </h2>
-
-        <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-          <div className="pt-6 sm:flex">
-            <dt className="font-bold text-[17px] text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
-              სახელი და გვარი
+    <form className="overflow-hidden bg-white shadow sm:rounded-lg p-3">
+      <div className="px-4 sm:px-0">
+        <h3 className="text-[20px] font-semibold leading-7 text-gray-900">
+          მომხმარებლის პროფილი
+        </h3>
+      </div>
+      <div className="mt-6 border-t border-gray-100">
+        <dl className="divide-y divide-gray-100">
+          <div className=" px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+            <dt className="text-md font-medium leading-6 text-gray-900">
+              მომხმარებელი
             </dt>
-            <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-              <input
-                type="text"
-                name="first-name"
-                id="first-name"
-                autoComplete="given-name"
-                disabled={!isEdit}
-                defaultValue={
-                  user?.user_data.user_type == "client"
-                    ? userProfile?.representative_full_name
-                    : userProfile?.name
-                }
-                className="block w-[300px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-              />
+            <dd className="mt-1 text-md leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+              {isEdit ? (
+                <input
+                  {...register("user_data.username", { required: true })}
+                  className="block outline-none w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  style={
+                    errors.user_data?.username && { border: "1px solid red" }
+                  }
+                />
+              ) : (
+                user?.user_data.username
+              )}
             </dd>
           </div>
-
-          <dl className="mt-6 space-y-6 divide-y divide-gray-1000 text-sm leading-6">
-            <dl className="mt-6 space-y-6 divide-y divide-gray-100  text-sm leading-6">
-              <div className="pt-6 sm:flex">
-                <dt className="font-bold text-gray-900 sm:w-64 sm:flex-none sm:pr-6 text-[17px]">
-                  ელ. ფოსტა
-                </dt>
-                <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                  <input
-                    type="text"
-                    name="email"
-                    id="email"
-                    autoComplete="given-name"
-                    disabled={!isEdit}
-                    defaultValue={userProfile?.email}
-                    className="block w-[100%] max-w-[350px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-                  />
-                </dd>
-              </div>
-              <dl className="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
-                <div className="pt-6 sm:flex">
-                  <dt className="font-bold text-gray-900 sm:w-64 sm:flex-none sm:pr-6 text-[17px]">
-                    ტელეფონის ნომერი
-                  </dt>
-                  <dd className="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                    <input
-                      type="text"
-                      name="number"
-                      id="number"
-                      autoComplete="given-name"
-                      disabled={!isEdit}
-                      defaultValue={userProfile?.phone_number}
-                      className="block w-[250px] rounded-md  border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-[17px] sm:leading-6"
-                    />
-                  </dd>
-                </div>
-              </dl>
-            </dl>
-          </dl>
-        </dl>
-      </div>
-
-      {user?.user_data.user_type == "client" && (
-        <div>
-          <h2 className="text-base text-[22px] font-semibold leading-7 text-gray-900 pb-2">
-            მისამართები
-          </h2>
-
-          <div className="flex border-t border-gray-100 pt-6">
-            <button
-              type="button"
-              className="text-sm font-semibold leading-6 text-indigo-600 hover:text-indigo-500 text-[17px]"
-            >
-              <span aria-hidden="true">+</span> მისამართის დამატება
-            </button>
+          <div className="bg-white px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+            <dt className="text-md font-medium leading-6 text-gray-900">
+              სახელი
+            </dt>
+            <dd className="mt-1 text-md leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+              {isEdit ? (
+                <input
+                  style={
+                    errors.user_data?.profile?.name && {
+                      border: "1px solid red",
+                    }
+                  }
+                  {...register("user_data.profile.name", { required: true })}
+                  className="block outline-none w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              ) : (
+                user?.user_data.profile.name
+              )}
+            </dd>
           </div>
+          {user?.user_data.user_type == "client" && (
+            <div className="bg-white px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+              <dt className="text-md font-medium leading-6 text-gray-900">
+                წარმომადგენლის სახელი
+              </dt>
+              <dd className="mt-1 text-md leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                {isEdit ? (
+                  <input
+                    style={
+                      errors.user_data?.profile?.representative_full_name && {
+                        border: "1px solid red",
+                      }
+                    }
+                    {...register("user_data.profile.representative_full_name", {
+                      required: true,
+                    })}
+                    className="block outline-none w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                ) : (
+                  user?.user_data.profile.representative_full_name
+                )}
+              </dd>
+            </div>
+          )}
+          <div className=" px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+            <dt className="text-md font-medium leading-6 text-gray-900">
+              ელ-ფოსტა
+            </dt>
+            <dd className="mt-1 text-md leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+              {isEdit ? (
+                <input
+                  style={
+                    errors.user_data?.profile?.email && {
+                      border: "1px solid red",
+                    }
+                  }
+                  {...register("user_data.profile.email", { required: true })}
+                  className="block outline-none w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              ) : (
+                user?.user_data.profile.email
+              )}
+            </dd>
+          </div>
+          {user?.user_data.user_type != "admin" && (
+            <div className="bg-white px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+              <dt className="text-md font-medium leading-6 text-gray-900">
+                ტელეფონის ნომერი
+              </dt>
+              <dd className="mt-1 text-md leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                {isEdit ? (
+                  <input
+                    style={
+                      errors.user_data?.profile?.phone_number && {
+                        border: "1px solid red",
+                      }
+                    }
+                    {...register("user_data.profile.phone_number", {
+                      required: true,
+                    })}
+                    className="block outline-none w-full max-w-[200px] rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                ) : (
+                  user?.user_data.profile.phone_number
+                )}
+              </dd>
+            </div>
+          )}
+
+          {/* <div className="bg-white px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+            <dt className="text-md font-medium leading-6 text-gray-900">
+              მისამართები
+            </dt>
+            <dd className="mt-2 text-md text-gray-900 sm:col-span-2 sm:mt-0">
+              <ul
+                role="list"
+                className="divide-y divide-gray-100 rounded-md border border-gray-200"
+              >
+                <li className="flex items-center justify-between py-4 pl-4 pr-5 text-md leading-6">
+                  <div className="flex w-0 flex-1 items-center">
+                    <div className="ml-4 flex min-w-0 flex-1 gap-2">
+                      <span className="truncate font-medium">
+                        {userProfile?.addresses}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </dd>
+          </div> */}
+        </dl>
+        <div className="ml-2 mt-4">
+          {user?.user_data.user_type == "admin" && (
+            <button
+              type="submit"
+              className="rounded-md bg-indigo-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+              onClick={handleButtonClick}
+            >
+              {isEdit ? "შენახვა" : "რედაქტირება"}
+            </button>
+          )}
         </div>
-      )}
-      <div className="w-full flex justify-end mt-3 border-none text-xl h-4">
-        {isEdit && (
-          <button
-            type="button"
-            className="rounded-md bg-white font-bold text-indigo-600 hover:text-indigo-500"
-            onClick={() => setIsEdit(false)}
-          >
-            შენახვა
-          </button>
-        )}
       </div>
-    </div>
+    </form>
   );
 }

@@ -5,4 +5,5 @@ export interface NotificationType {
   created_at: string;
   admin_user: number;
   order: number;
+  new_status: string;
 }

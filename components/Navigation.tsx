@@ -15,15 +15,12 @@ import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { signOut } from "next-auth/react";
 import { NotificationType } from "@/types/notificaition";
-import { ClientOrderType } from "@/types/order";
 
 export default function Navigation({
   currentUser,
-  ordersData,
   notificationsData,
 }: {
   currentUser: UserType | undefined;
-  ordersData: ClientOrderType[];
   notificationsData: NotificationType[];
 }) {
   const navigation = currentUser
@@ -46,10 +43,9 @@ export default function Navigation({
   const pathName = usePathname();
 
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
-  const [orders, setOrders] = useState<ClientOrderType[]>([]);
+
   useEffect(() => {
     setNotifications(notificationsData);
-    setOrders(ordersData);
   }, []);
 
   console.log(notificationsData);
@@ -116,12 +112,7 @@ export default function Navigation({
                               <li key={notification.order}>
                                 <span>
                                   შეიცვალა შეკვეთის (კოდით {notification.order})
-                                  სტატუსი:{" "}
-                                  {
-                                    orders?.find(
-                                      (item) => item.id == notification.order
-                                    )?.staged_status
-                                  }{" "}
+                                  სტატუსი: {notification.new_status}
                                 </span>
                                 <button
                                   onClick={async () => {
