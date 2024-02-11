@@ -1,12 +1,13 @@
-// import { getCurrentUser } from "@/lib/session";
+import UserList from "@/components/UserList";
+import { getCurrentUser } from "@/lib/session";
 
 export default async function page() {
-  // const user = await getCurrentUser();
-  // const couriers = await getCouriers(user?.token);
-  // const clients = await getClients(user?.token);
+  const user = await getCurrentUser();
+  const couriers = await getCouriers(user?.token);
+  const clients = await getClients(user?.token);
 
-  // console.log(couriers, clients);
-  return <div>page</div>;
+  console.log(couriers, clients);
+  return <UserList couriers={couriers} clients={clients} token={user?.token} />;
 }
 
 export async function getCouriers(token: string | undefined) {

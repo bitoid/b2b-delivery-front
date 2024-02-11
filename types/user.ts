@@ -26,4 +26,6 @@ export interface UserInfoType {
   };
   name: string;
   phone_number: string;
+  representative_full_name?: string;
+  addresses?: string;
 }

@@ -27,12 +27,17 @@ export default function ProfileForm({ user }: { user: UserType | undefined }) {
 
   const onSubmit = async (data: UserType) => {
     console.log(data);
+    const adminData = {
+      username: data.user_data.username,
+      email: data.user_data.profile.email,
+      is_staff: true,
+    };
     try {
       const response = await fetch(
         `${process.env.API_URL}/users/${user?.user_data.id}/`,
         {
           method: "PUT",
-          body: JSON.stringify(data),
+          body: JSON.stringify(adminData),
           headers: {
             "Content-Type": "application/json",
             Authorization: `Token ${user?.token}`,

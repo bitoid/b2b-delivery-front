@@ -27,7 +27,7 @@ export default function Navigation({
     ? [{ name: "გაგზავნილი შეკვეთები", href: "/orders" }]
     : [];
   if (currentUser?.user_data.user_type == "admin") {
-    navigation.push({ name: "მომხმარებლის დამატება", href: "/add-user" });
+    navigation.push({ name: "სისტემის მომხმარებლები", href: "/users" });
   }
   const userNavigation = [
     { name: "პროფილი", href: "/profile", listener: () => {} },

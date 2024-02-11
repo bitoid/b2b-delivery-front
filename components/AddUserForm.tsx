@@ -1,5 +1,6 @@
 "use client";
 
+import { UserInfoType } from "@/types/user";
 import { message } from "antd";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -13,7 +14,15 @@ type FormData = {
   addresses: string;
 };
 
-export default function AddUserForm({ token }: { token: string }) {
+export default function AddUserForm({
+  token,
+  setIsAddUser,
+  setUserList,
+}: {
+  token: string | undefined;
+  setIsAddUser: React.Dispatch<React.SetStateAction<boolean>>;
+  setUserList: React.Dispatch<React.SetStateAction<UserInfoType[]>>;
+}) {
   const {
     register,
     handleSubmit,
@@ -36,9 +45,11 @@ export default function AddUserForm({ token }: { token: string }) {
             Authorization: `Token ${token}`,
           },
         });
-        console.log(response);
+        const responseData = await response.json();
         if (response.ok) {
+          setUserList((prev) => [...prev, responseData]);
           message.success(`მომხმარებელი წარმატებით დაემატა`);
+          setIsAddUser(false);
           reset();
         } else {
           message.error(`მომხმარებლის დამატება ვერ მოხერხდა`);
@@ -61,9 +72,13 @@ export default function AddUserForm({ token }: { token: string }) {
             Authorization: `Token ${token}`,
           },
         });
-        console.log(response);
+        const responseData = await response.json();
+
         if (response.ok) {
+          setUserList((prev) => [...prev, responseData]);
           message.success(`მომხმარებელი წარმატებით დაემატა`);
+          setIsAddUser(false);
+
           reset();
         } else {
           message.error(`მომხმარებლის დამატება ვერ მოხერხდა`);
