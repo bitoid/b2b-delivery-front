@@ -1,9 +1,22 @@
 "use client";
 
-import { Modal } from "antd";
+import { Modal, Select, SelectProps } from "antd";
 import React, { useState } from "react";
-import AddUserForm from "./AddUserForm";
+import UserForm from "./UserForm";
 import { UserInfoType } from "@/types/user";
+import { EditFilled } from "@ant-design/icons";
+import Entity from "@ant-design/cssinjs/lib/Cache";
+import { StyleProvider, createCache, extractStyle } from "@ant-design/cssinjs";
+import { useServerInsertedHTML } from "next/navigation";
+
+const options: SelectProps["options"] = [
+  { value: "client", label: "კლიენტი" },
+  { value: "courier", label: "კურიერი" },
+];
+
+const handleChange = (value: string[]) => {
+  console.log(`selected ${value}`);
+};
 
 export default function UserList({
   couriers,
@@ -15,11 +28,32 @@ export default function UserList({
   token: string | undefined;
 }) {
   const [isAddUser, setIsAddUser] = useState(false);
+  const [isEditUser, setIsEditUser] = useState(false);
   // const [role, setRole] = useState("ყველა");
   const [userList, setUserList] = useState<UserInfoType[]>([
     ...couriers,
     ...clients,
   ]);
+
+  const [editUser, setEditUser] = useState<UserInfoType | null>(null);
+
+  const cache = React.useMemo<Entity>(() => createCache(), []);
+  const isServerInserted = React.useRef<boolean>(false);
+
+  useServerInsertedHTML(() => {
+    // avoid duplicate css insert
+    if (isServerInserted.current) {
+      return;
+    }
+    isServerInserted.current = true;
+    return (
+      <style
+        id="antd"
+        dangerouslySetInnerHTML={{ __html: extractStyle(cache, true) }}
+      />
+    );
+  });
+
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center justify-between">
@@ -32,17 +66,16 @@ export default function UserList({
               <label htmlFor="country" className="sr-only">
                 როლი
               </label>
-              <select
-                id="country"
-                name="country"
-                autoComplete="country-name"
-                className="relative block w-full  rounded-none rounded-t-md border-0  py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                // onChange={(e) => setRole(e.target.value)}
-              >
-                <option>კლიენტი</option>
-                <option>კურიერი</option>
-                <option>ყველა</option>
-              </select>
+              <StyleProvider cache={cache}>
+                <Select
+                  mode="multiple"
+                  allowClear
+                  style={{ width: "100%" }}
+                  placeholder="Please select"
+                  onChange={handleChange}
+                  options={options}
+                />
+              </StyleProvider>
             </div>
           </div>
         </fieldset>
@@ -113,13 +146,13 @@ export default function UserList({
                             : "კურიერი"
                           : "კლიენტი"}
                       </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <a
-                          href="#"
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          განახლება
-                        </a>
+                      <td
+                        className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
+                        onClick={() => {
+                          setIsEditUser(true), setEditUser(user);
+                        }}
+                      >
+                        <EditFilled className="w-6 h-6 text-indigo-600 hover:text-indigo-900" />
                       </td>
                     </tr>
                   ))}
@@ -135,12 +168,30 @@ export default function UserList({
         footer={null}
         width={700}
       >
-        <AddUserForm
+        <UserForm
           token={token}
           setIsAddUser={setIsAddUser}
           setUserList={setUserList}
+          mode="add"
         />
       </Modal>
+      {isEditUser && (
+        <Modal
+          open={isEditUser}
+          onCancel={() => setIsEditUser(false)}
+          footer={null}
+          width={700}
+        >
+          <UserForm
+            token={token}
+            setIsAddUser={setIsEditUser}
+            setUserList={setUserList}
+            userList={userList}
+            mode="edit"
+            userData={editUser}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

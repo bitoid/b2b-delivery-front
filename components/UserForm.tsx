@@ -1,10 +1,13 @@
 "use client";
 
 import { UserInfoType } from "@/types/user";
-import { message } from "antd";
+import { Modal, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactInputMask from "react-input-mask";
+import { DeleteFilled } from "@ant-design/icons";
+import { cn } from "@/lib/utils";
+import { DeleteModal } from "./EditOrder";
 
 type FormData = {
   user: { username: string; password: string; email: string };
@@ -14,14 +17,20 @@ type FormData = {
   addresses: string;
 };
 
-export default function AddUserForm({
+export default function UserForm({
   token,
   setIsAddUser,
   setUserList,
+  mode,
+  userData,
+  userList,
 }: {
   token: string | undefined;
   setIsAddUser: React.Dispatch<React.SetStateAction<boolean>>;
   setUserList: React.Dispatch<React.SetStateAction<UserInfoType[]>>;
+  mode: "add" | "edit";
+  userData?: UserInfoType | null;
+  userList?: UserInfoType[];
 }) {
   const {
     register,
@@ -31,8 +40,40 @@ export default function AddUserForm({
     formState: { errors },
   } = useForm<FormData>();
 
+  const [isDelete, setIsDelete] = useState(false);
+
+  const [selected, setSelected] = useState("client");
+
+  useEffect(() => {
+    reset({
+      user: { username: "", email: "", password: "" },
+      name: "",
+
+      representative_full_name: "",
+      phone_number: "",
+      addresses: "",
+    });
+  }, [selected]);
+
+  useEffect(() => {
+    if (mode == "edit") {
+      reset({
+        user: {
+          username: userData?.user.username,
+          email: userData?.user.email,
+          password: "",
+        },
+        name: userData?.name,
+        representative_full_name: userData?.representative_full_name,
+        phone_number: userData?.phone_number,
+        addresses: userData?.addresses,
+      });
+    }
+    setSelected("client");
+  }, []);
+
   const onSubmit = async (data: FormData) => {
-    if (selected == "კლიენტი") {
+    if (selected == "client") {
       console.log(data);
       try {
         message.config({ maxCount: 1 });
@@ -88,50 +129,79 @@ export default function AddUserForm({
       }
     }
   };
-  const [selected, setSelected] = useState("კლიენტი");
 
-  useEffect(() => {
-    reset({
-      user: { username: "", email: "", password: "" },
-      name: "",
+  const handleDelete = async () => {
+    try {
+      message.loading("გთხოვთ დაელოდეთ");
+      message.config({ maxCount: 1 });
+      const response = await fetch(
+        `${process.env.API_URL}/users/${userData?.user.id}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }
+      );
+      console.log(userList);
+      if (response.ok) {
+        const newUsers = userList?.filter(
+          (user) => user.user.id !== userData?.user.id
+        );
 
-      representative_full_name: "",
-      phone_number: "",
-      addresses: "",
-    });
-  }, [selected]);
+        if (newUsers) setUserList([...newUsers]);
+        message.success("მომხმარებელი წარმატებით წაიშალა");
+        setIsAddUser(false);
+        setIsDelete(false);
+      } else {
+        message.error("მომხმარებლის წაშლა ვერ მოხერხდა");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div className="w-[100%] max-w-[600px] m-auto">
-      <label
-        htmlFor="username"
-        className="block text-sm font-bold leading-6 text-gray-900"
-      >
-        მომხმარებლის ტიპი
-      </label>
-      <div>
-        <fieldset className="mt-4">
-          <div className="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
-            {["კლიენტი", "კურიერი"].map((user) => (
-              <div key={user} className="flex items-center">
-                <input
-                  id={user}
-                  name="notification-method"
-                  type="radio"
-                  className="h-4 w-4 accent-indigo-600 border-gray-300"
-                  onChange={() => setSelected(user)}
-                  checked={selected === user}
-                />
-                <label
-                  htmlFor={user}
-                  className="ml-3 block text-sm font-medium leading-6 text-gray-900"
-                >
-                  {user}
-                </label>
+      {mode == "add" && (
+        <>
+          {" "}
+          <label
+            htmlFor="username"
+            className="block text-sm font-bold leading-6 text-gray-900"
+          >
+            მომხმარებლის ტიპი
+          </label>
+          <div>
+            <fieldset className="mt-4">
+              <div className="space-y-4 sm:flex sm:items-center sm:space-x-10 sm:space-y-0">
+                {[
+                  { value: "client", label: "კლიენტი" },
+                  { value: "courier", label: "კურიერი" },
+                ].map((user) => (
+                  <div key={user.value} className="flex items-center">
+                    <input
+                      id={user.value}
+                      name="notification-method"
+                      type="radio"
+                      className="h-4 w-4 accent-indigo-600 border-gray-300"
+                      onChange={() => setSelected(user.value)}
+                      checked={selected === user.value}
+                      value={user.value}
+                    />
+                    <label
+                      htmlFor={user.value}
+                      className="ml-3 block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      {user.label}
+                    </label>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </fieldset>
-      </div>
+            </fieldset>
+          </div>{" "}
+        </>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-12">
@@ -251,7 +321,7 @@ export default function AddUserForm({
                 </div>
               </div>
 
-              {selected == "კლიენტი" && (
+              {selected == "client" && (
                 <>
                   <div className="sm:col-span-3">
                     <label
@@ -302,15 +372,32 @@ export default function AddUserForm({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-x-6">
+        <div
+          className={cn(
+            "mt-6 flex items-center  gap-x-6",
+            mode == "edit" ? "justify-between" : "justify-end"
+          )}
+        >
+          {mode == "edit" && (
+            <button
+              onClick={() => setIsDelete(true)}
+              type="button"
+              className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              წაშლა <DeleteFilled className="w-6 h-2" />
+            </button>
+          )}
           <button
             type="submit"
             className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
-            დამატება
+            {mode == "add" ? "დამატება" : "განახლება"}
           </button>
         </div>
       </form>
+      <Modal open={isDelete} onCancel={() => setIsDelete(false)} footer={null}>
+        <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
+      </Modal>
     </div>
   );
 }

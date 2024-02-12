@@ -4,7 +4,7 @@ import { ConfigProvider, Select } from "antd";
 import { useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "@/context/tableContext";
-import { TrashIcon } from "@heroicons/react/20/solid";
+import { DeleteFilled } from "@ant-design/icons";
 import InputMask from "react-input-mask";
 
 export default function OrderForm({
@@ -312,25 +312,24 @@ export default function OrderForm({
         </div>
       </div>
       <div className="flex justify-between items-center mt-2">
+        {mode == "edit" && context?.user?.user_data.username == "admin" && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => {
+              setIsDelete && setIsDelete(true);
+            }}
+          >
+            შეკვეთის წაშლა
+            <DeleteFilled className="block w-6 h-4" />
+          </button>
+        )}
         <button
           type="submit"
           className="justify-right gap-x-1.5  rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           {mode == "edit" ? "შენახვა" : "დამატება"}
         </button>
-
-        {mode == "edit" && context?.user?.user_data.username == "admin" && (
-          <button
-            type="button"
-            className="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            onClick={() => {
-              setIsDelete && setIsDelete(true);
-            }}
-          >
-            შეკვეთის წაშლა
-            <TrashIcon className="block w-6 h-6" />
-          </button>
-        )}
       </div>
     </form>
   );

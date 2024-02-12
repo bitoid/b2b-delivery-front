@@ -13,7 +13,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
-import { signOut } from "next-auth/react";
 import { NotificationType } from "@/types/notificaition";
 
 export default function Navigation({
@@ -34,9 +33,7 @@ export default function Navigation({
     {
       name: "სისტემიდან გასვლა",
       href: "/login",
-      listener: () => {
-        signOut();
-      },
+      listener: () => {},
     },
   ];
 

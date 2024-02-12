@@ -26,7 +26,7 @@ export default async function RootLayout({
         <Navigation currentUser={user} notificationsData={notifications} />
 
         <main className="mt-10">
-          <div className="mx-auto  px-4 pb-12 sm:px-6 lg:px-8">{children}</div>
+          <div className="mx-auto px-4 pb-12 sm:px-6 lg:px-8">{children}</div>
         </main>
       </body>
     </html>

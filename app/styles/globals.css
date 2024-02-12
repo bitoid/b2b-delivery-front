@@ -79,3 +79,7 @@ select {
 .ant-table-placeholder {
   display: none;
 }
+
+.ant-select-selection-item {
+  color: black !important;
+}
