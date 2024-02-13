@@ -10,10 +10,11 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, getColorForStatus, getStatusName } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { NotificationType } from "@/types/notificaition";
+import { message } from "antd";
 
 export default function Navigation({
   currentUser,
@@ -102,44 +103,133 @@ export default function Navigation({
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute  w-[700px] right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute w-[300px] md:w-[500px] right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                         <ul>
-                          {notifications.map((notification) => {
-                            return (
-                              <li key={notification.order}>
-                                <span>
-                                  შეიცვალა შეკვეთის (კოდით {notification.order})
-                                  სტატუსი: {notification.new_status}
-                                </span>
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      const response = await fetch(
-                                        `${process.env.API_URL}/orders/${notification.order}/approve_status/`,
-                                        {
-                                          method: "POST",
-                                          headers: {
-                                            Authorization: `Token ${currentUser?.token}`,
-                                          },
-                                        }
-                                      );
-                                      if (response.ok) {
-                                        const newNotifications =
-                                          notifications.filter(
-                                            (item) => item.id != notification.id
-                                          );
-                                        setNotifications(newNotifications);
-                                      }
-                                    } catch (err) {
-                                      console.log(err);
-                                    }
-                                  }}
+                          {notifications
+                            .filter(
+                              (notification) =>
+                                notification.notification_type ==
+                                  "status_updated" &&
+                                notification.is_read == false
+                            )
+                            .map((notification) => {
+                              return (
+                                <li
+                                  key={notification.order}
+                                  className="flex justify-between px-4 py-2  gap-2  text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition-colors duration-200 ease-in-out border-b-2 border-gray-100"
                                 >
-                                  დადასტურება
-                                </button>
-                              </li>
-                            );
-                          })}
+                                  <span className="font-semibold">
+                                    შეიცვალა შეკვეთის (კოდით{" "}
+                                    {notification.order}) სტატუსი:{" "}
+                                    <span
+                                      className="font-bold"
+                                      style={{
+                                        color: getColorForStatus(
+                                          notification.new_status
+                                        ),
+                                      }}
+                                    >
+                                      {getStatusName(notification.new_status)}
+                                    </span>
+                                  </span>
+                                  <div className="flex flex-col md:flex-row gap-1">
+                                    <button
+                                      className="mr-2 w-full bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors duration-200 ease-in-out"
+                                      onClick={async () => {
+                                        message.loading("დაელოდეთ...");
+                                        try {
+                                          const response = await fetch(
+                                            `${process.env.API_URL}/orders/${notification.order}/approve_status/`,
+                                            {
+                                              method: "POST",
+                                              headers: {
+                                                Authorization: `Token ${currentUser?.token}`,
+                                              },
+                                            }
+                                          );
+                                          const response2 = await fetch(
+                                            `${process.env.API_URL}/notifications/${notification.id}/`,
+                                            {
+                                              method: "PUT",
+                                              body: JSON.stringify({
+                                                is_read: true,
+                                              }),
+                                              headers: {
+                                                Authorization: `Token ${currentUser?.token}`,
+                                              },
+                                            }
+                                          );
+                                          if (response.ok && response2.ok) {
+                                            message.success(
+                                              "სტატუსი დადასტურებულია"
+                                            );
+                                            const newNotifications =
+                                              notifications.filter(
+                                                (item) =>
+                                                  item.id != notification.id
+                                              );
+                                            setNotifications(newNotifications);
+                                          } else {
+                                            message.error("დაფიქსირდა შეცდომა");
+                                          }
+                                        } catch (err) {
+                                          console.log(err);
+                                        }
+                                      }}
+                                    >
+                                      დადასტურება
+                                    </button>
+                                    <button
+                                      className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors duration-200 ease-in-out"
+                                      onClick={async () => {
+                                        try {
+                                          message.loading("დაელოდეთ...");
+                                          const response = await fetch(
+                                            `${process.env.API_URL}/orders/${notification.order}/disapprove_status/`,
+                                            {
+                                              method: "POST",
+                                              headers: {
+                                                Authorization: `Token ${currentUser?.token}`,
+                                              },
+                                            }
+                                          );
+                                          const response2 = await fetch(
+                                            `${process.env.API_URL}/notifications/${notification.id}/`,
+                                            {
+                                              method: "PUT",
+                                              body: JSON.stringify({
+                                                is_read: true,
+                                              }),
+                                              headers: {
+                                                Authorization: `Token ${currentUser?.token}`,
+                                              },
+                                            }
+                                          );
+
+                                          if (response.ok && response2.ok) {
+                                            message.success(
+                                              "სტატუსი უარყოფილია"
+                                            );
+                                            const newNotifications =
+                                              notifications.filter(
+                                                (item) =>
+                                                  item.id != notification.id
+                                              );
+                                            setNotifications(newNotifications);
+                                          } else {
+                                            message.error("დაფიქსირდა შეცდომა");
+                                          }
+                                        } catch (err) {
+                                          console.log(err);
+                                        }
+                                      }}
+                                    >
+                                      უარყოფა
+                                    </button>
+                                  </div>
+                                </li>
+                              );
+                            })}
                         </ul>
                       </Menu.Items>
                     </Transition>
@@ -147,7 +237,7 @@ export default function Navigation({
                   {/* Profile dropdown */}
                   <Menu as="div" className="relative ml-5 flex">
                     <div>
-                      <Menu.Button className="relative flex items-center text-[18px] rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button className="relative flex items-center text-[18px] mx-auto rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Open user menu</span>
                         {currentUser?.user_data.user_type == "client" ? (

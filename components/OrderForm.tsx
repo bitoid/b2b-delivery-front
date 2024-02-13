@@ -127,7 +127,7 @@ export default function OrderForm({
             </label>
             <div className="mt-2">
               <InputMask
-                mask={"\\9\\95 999 999 9 99"}
+                mask={"\\9\\95 999 999 999"}
                 maskChar={null}
                 {...register("phone_number", { required: true })}
                 className="block w-full  outline-none  bg-gray-50 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"

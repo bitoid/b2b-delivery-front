@@ -85,7 +85,9 @@ export default function EditOrder({
       modifiedData.courier_fee = order.courier_fee;
       modifiedData.sum = order.sum;
     }
+    if (modifiedData.status == "Pending Approval") modifiedData.status = "DF";
 
+    console.log(modifiedData);
     modifiedData.created_at = order.created_at;
 
     try {

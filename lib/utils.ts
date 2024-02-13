@@ -61,3 +61,18 @@ export function getColorForStatus(status: string) {
       return "black";
   }
 }
+
+export function getStatusName(status: string) {
+  switch (status) {
+    case "DF":
+      return "სტატუსის გარეშე";
+    case "RD":
+      return "ვერ ჩაბარდა";
+    case "YL":
+      return "ჩაბარების პროცესშია";
+    case "GR":
+      return "ჩაბარებულია";
+    case "BK":
+      return "დაბრუნებულია";
+  }
+}

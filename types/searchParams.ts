@@ -12,6 +12,7 @@ interface SearchParamsType {
   status?: string;
   created_at?: string;
   column?: string;
+  staged_status?: string;
 }
 
 export default SearchParamsType;

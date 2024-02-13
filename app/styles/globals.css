@@ -38,13 +38,13 @@ select {
     brightness(115%) contrast(100%);
 }
 
-#for-hide .ant-select-selection-item {
+/* #for-hide .ant-select-selection-item {
   background-color: transparent;
 }
 
 #for-hide .ant-select-selection-item svg {
   display: none;
-}
+} */
 
 .ant-btn-sm {
   background-color: white;
@@ -72,8 +72,8 @@ select {
   background: #555;
 }
 
-.ant-select .ant-select-selection-item {
-  color: white;
+#table-select .ant-select .ant-select-selection-item {
+  color: white !important;
 }
 
 .ant-table-placeholder {

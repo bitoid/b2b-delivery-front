@@ -28,4 +28,5 @@ export interface UserInfoType {
   phone_number: string;
   representative_full_name?: string;
   addresses?: string;
+  role: string;
 }

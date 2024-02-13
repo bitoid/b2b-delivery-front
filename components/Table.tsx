@@ -28,7 +28,7 @@ import {
   TableRowSelection,
 } from "antd/es/table/interface";
 import { useRouter } from "next/navigation";
-import { EditFilled } from "@ant-design/icons";
+import { EditFilled, PhoneFilled, MessageFilled } from "@ant-design/icons";
 // import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
@@ -71,6 +71,7 @@ const OrderTable: React.FC<{
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [isCouriers, setIsCouriers] = useState<boolean>(false);
   const [minPrice, setMinPrice] = useState<number | undefined>(
     searchParams["item_price"]
       ? Number(searchParams["item_price"].split("to")[0])
@@ -242,6 +243,29 @@ const OrderTable: React.FC<{
     {
       title: "ტელეფონი",
       dataIndex: "phone_number",
+      render: (text) =>
+        user?.user_data.user_type == "courier" ? (
+          <>
+            <details>
+              <summary>{text}</summary>
+              <div className="flex flex-col border-2 border-gray-200 p-1">
+                <a className="text-black" href={`tel:${text}`}>
+                  <PhoneFilled className="w-6 h-6" /> დარეკვა
+                </a>
+                <a
+                  className="text-black border-t-2 border-gray-200 pt-2"
+                  href={`sms:${text}?body=თქვენთან მოემართება კურიერი`}
+                >
+                  <MessageFilled className="w-6 h-6" />
+                  მესიჯის გაგზავნა
+                </a>
+              </div>
+            </details>
+          </>
+        ) : (
+          <>{text}</>
+        ),
+
       filters: getUniques(data, "phone_number"),
       filterSearch: true,
       filteredValue: filteredInfo?.phone_number || null,
@@ -275,44 +299,50 @@ const OrderTable: React.FC<{
           : filteredInfo?.status || null,
 
       render: (text, record) => (
-        <ConfigProvider
-          theme={{
-            components: {
-              Select: {
-                optionSelectedBg: getColorForStatus(
-                  user?.user_data.user_type == "courier"
-                    ? record.staged_status
-                    : record.status
-                ),
-                optionSelectedColor: "white",
-                selectorBg: getColorForStatus(
-                  user?.user_data.user_type == "courier"
-                    ? record.staged_status
-                    : record.status
-                ),
-                borderRadius: 100,
+        <div id="table-select">
+          <ConfigProvider
+            theme={{
+              components: {
+                Select: {
+                  optionSelectedBg: getColorForStatus(
+                    user?.user_data.user_type == "courier" &&
+                      !record.status_approved
+                      ? record.staged_status
+                      : record.status
+                  ),
+
+                  optionSelectedColor: "white",
+                  selectorBg: getColorForStatus(
+                    user?.user_data.user_type == "courier" &&
+                      !record.status_approved
+                      ? record.staged_status
+                      : record.status
+                  ),
+                  borderRadius: 100,
+                },
               },
-            },
-          }}
-        >
-          <Select
-            value={
-              user?.user_data.user_type == "courier"
-                ? record.staged_status
-                : record.status
-            }
-            className={`w-[120px]`}
-            dropdownStyle={{ width: "190px" }}
-            onChange={(value) => handleStatusChange(record.id, value)}
-            options={[
-              { label: "სტატუსის გარეშე", value: "DF" },
-              { label: "ჩაბარებულია", value: "GR" },
-              { label: "ჩაბარების პროცესშია", value: "YL" },
-              { label: "ვერ ჩაბარდა", value: "RD" },
-              { label: "დაბრუნებულია", value: "BK" },
-            ]}
-          />
-        </ConfigProvider>
+            }}
+          >
+            <Select
+              value={
+                user?.user_data.user_type == "courier" &&
+                !record.status_approved
+                  ? record.staged_status
+                  : record.status
+              }
+              className={`w-[120px]`}
+              dropdownStyle={{ width: "190px" }}
+              onChange={(value) => handleStatusChange(record.id, value)}
+              options={[
+                { label: "სტატუსის გარეშე", value: "DF" },
+                { label: "ჩაბარებულია", value: "GR" },
+                { label: "ჩაბარების პროცესშია", value: "YL" },
+                { label: "ვერ ჩაბარდა", value: "RD" },
+                { label: "დაბრუნებულია", value: "BK" },
+              ]}
+            />
+          </ConfigProvider>
+        </div>
       ),
     },
     {
@@ -543,6 +573,7 @@ const OrderTable: React.FC<{
 
             if (response.ok) {
               message.success("მესიჯი წარმატებით გაიგზავნა");
+              setSelectedRowKeys([]);
             } else {
               message.error("მესიჯის გაგზავნა ვერ მოხერხდა");
             }
@@ -563,14 +594,16 @@ const OrderTable: React.FC<{
           const printWindow = window.open("", "_blank");
           const columnNames = {
             id: "კოდი",
-            city: "ქალაქი",
-            addressee_full_name: "სახელი და გვარი",
             address: "მისამართი",
             phone_number: "ტელეფონი",
+            item_price: "შეკვეთის ფასი",
+            courier_fee: "საკურიერო",
+            client_name: "კლიენტი",
+            comment: "კომენტარი",
           };
 
           // Get the selected rows from the data using the selected keys
-          const selectedRows = data.filter((row) =>
+          const selectedRows = orders.filter((row) =>
             selectedRowKeys.includes(row.id)
           );
           printWindow?.document.write("<table style='width:100%'>");
@@ -585,7 +618,7 @@ const OrderTable: React.FC<{
           printWindow?.document.write("</tr>");
 
           interface NewClientOrderType extends ClientOrderType {
-            [key: string]: string | number | null;
+            [key: string]: string | number | null | boolean;
           }
           // Write table rows
           selectedRows.forEach((record: ClientOrderType) => {
@@ -607,6 +640,12 @@ const OrderTable: React.FC<{
           printWindow?.print();
         },
       },
+
+      {
+        key: "add_courier",
+        text: "მონიშნული შეკვეთების მიბმა კურიერისთვის",
+        onSelect: () => setIsCouriers(true),
+      },
     ],
   };
 
@@ -619,6 +658,7 @@ const OrderTable: React.FC<{
   //event handlers
   const handleStatusChange = async (key: number, value: string) => {
     if (user?.user_data.user_type === "client") {
+      message.warning("სტატუსის შეცვლის უფლება არ გაქვთ");
       return;
     }
     try {
@@ -628,13 +668,21 @@ const OrderTable: React.FC<{
           "Content-Type": "application/json",
           Authorization: `Token ${user?.token}`,
         },
-        body: JSON.stringify({ staged_status: value }),
+        body: JSON.stringify(
+          user?.user_data.user_type == "admin"
+            ? { status: value }
+            : { staged_status: value }
+        ),
       });
 
       if (response.ok) {
         setOrders((prevOrders) =>
           prevOrders?.map((order) =>
-            order.id === key ? { ...order, staged_status: value } : order
+            order.id === key
+              ? user?.user_data.user_type == "admin"
+                ? { ...order, status: value }
+                : { ...order, staged_status: value }
+              : order
           )
         );
       }
@@ -719,6 +767,11 @@ const OrderTable: React.FC<{
       if (query["created_at"].length == 2) {
         query["created_at"] = `${formattedStartDate}to${formattedEndDate}`;
       }
+    }
+
+    if (query["staged_status"]) {
+      query["status"] = query["staged_status"];
+      delete query["staged_status"];
     }
 
     localStorage.setItem(
@@ -815,6 +868,19 @@ const OrderTable: React.FC<{
             columns={columns}
             dataSource={orders}
             onChange={onChange}
+            footer={() => (
+              <div className="bg-white">
+                {user?.user_data.user_type != "courier" && (
+                  <button
+                    type="button"
+                    className="rounded flex justify-center items-center bg-white w-full py-2 text-sm font-bold text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                    onClick={() => setIsAdd(true)}
+                  >
+                    დამატება <PlusIcon className="w-6 h-6" />
+                  </button>
+                )}
+              </div>
+            )}
             scroll={{ y: "65vh", x: 750 }}
             className="custom-scroll"
             components={{
@@ -924,16 +990,6 @@ const OrderTable: React.FC<{
           </>
         )}
 
-        {user?.user_data.user_type != "courier" && (
-          <button
-            onClick={() => setIsAdd(true)}
-            className="mt-[-50px] flex items-center   bg-indigo-600 py-2 px-3 rounded-[20px] text-white hover:opacity-70 pointer relative z-5"
-          >
-            დამატება
-            <PlusIcon className="h-5 w-5" aria-hidden="true" />
-          </button>
-        )}
-
         {isAdd && (
           <>
             <Modal
@@ -963,6 +1019,59 @@ const OrderTable: React.FC<{
           centered
         >
           <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
+        </Modal>
+        <Modal
+          open={isCouriers}
+          onCancel={() => setIsCouriers(false)}
+          footer={null}
+          closeIcon={null}
+        >
+          <Select
+            placeholder="აირჩიეთ კურიერი"
+            className="w-full"
+            dropdownStyle={{ width: "200px" }}
+            options={couriers.map((courier) => ({
+              label: courier.name,
+              value: courier.id,
+            }))}
+            onChange={async (value) => {
+              message.config({ maxCount: 1 });
+              message.loading("დაელოდეთ...");
+              try {
+                const response = await fetch(
+                  `${process.env.API_URL}/orders/assign_courier/`,
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Token ${user?.token}`,
+                    },
+                    body: JSON.stringify({
+                      courier_id: value,
+                      order_ids: selectedRowKeys,
+                    }),
+                  }
+                );
+
+                if (response.ok) {
+                  message.success("შეკვეთები წარმატებით მიება კურიერს");
+                  setOrders((prevOrders) =>
+                    prevOrders.map((order) =>
+                      selectedRowKeys.includes(order.id)
+                        ? { ...order, courier: value }
+                        : order
+                    )
+                  );
+                  setIsCouriers(false);
+                  setSelectedRowKeys([]);
+                } else {
+                  message.error("შეკვეთების მიბმა ვერ მოხერხდა");
+                }
+              } catch (error) {
+                console.error("Error:", error);
+              }
+            }}
+          />
         </Modal>
       </TableContext.Provider>
     </StyleProvider>

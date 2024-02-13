@@ -1,22 +1,20 @@
 "use client";
 
-import { Modal, Select, SelectProps } from "antd";
+import { Modal, Select, SelectProps, message } from "antd";
 import React, { useState } from "react";
 import UserForm from "./UserForm";
 import { UserInfoType } from "@/types/user";
-import { EditFilled } from "@ant-design/icons";
+import { EditFilled, DeleteOutlined } from "@ant-design/icons";
 import Entity from "@ant-design/cssinjs/lib/Cache";
 import { StyleProvider, createCache, extractStyle } from "@ant-design/cssinjs";
 import { useServerInsertedHTML } from "next/navigation";
+import { DeleteModal } from "./EditOrder";
 
 const options: SelectProps["options"] = [
   { value: "client", label: "კლიენტი" },
   { value: "courier", label: "კურიერი" },
+  { value: "all", label: "ყველა" },
 ];
-
-const handleChange = (value: string[]) => {
-  console.log(`selected ${value}`);
-};
 
 export default function UserList({
   couriers,
@@ -35,7 +33,11 @@ export default function UserList({
     ...clients,
   ]);
 
-  const [editUser, setEditUser] = useState<UserInfoType | null>(null);
+  const [role, setRole] = useState<string>("all");
+
+  const [editUser, setEditUser] = useState<number | null>(null);
+  const [isDelete, setIsDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | undefined>(undefined);
 
   const cache = React.useMemo<Entity>(() => createCache(), []);
   const isServerInserted = React.useRef<boolean>(false);
@@ -54,6 +56,39 @@ export default function UserList({
     );
   });
 
+  const handleChange = (value: string) => {
+    setRole(value);
+  };
+
+  const handleDelete = async () => {
+    try {
+      message.loading("გთხოვთ დაელოდეთ");
+      message.config({ maxCount: 1 });
+      const response = await fetch(
+        `${process.env.API_URL}/users/${deleteId}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }
+      );
+      console.log(userList);
+      if (response.ok) {
+        const newUsers = userList?.filter((user) => user.user.id !== deleteId);
+
+        if (newUsers) setUserList([...newUsers]);
+        message.success("მომხმარებელი წარმატებით წაიშალა");
+        setIsAddUser(false);
+        setIsDelete(false);
+      } else {
+        message.error("მომხმარებლის წაშლა ვერ მოხერხდა");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center justify-between">
@@ -68,10 +103,9 @@ export default function UserList({
               </label>
               <StyleProvider cache={cache}>
                 <Select
-                  mode="multiple"
-                  allowClear
+                  defaultValue={"all"}
                   style={{ width: "100%" }}
-                  placeholder="Please select"
+                  placeholder="აირჩიეთ"
                   onChange={handleChange}
                   options={options}
                 />
@@ -103,6 +137,12 @@ export default function UserList({
                     </th>
                     <th
                       scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                    >
+                      სახელი
+                    </th>
+                    <th
+                      scope="col"
                       className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                     >
                       მეილი
@@ -128,34 +168,46 @@ export default function UserList({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {userList.map((user: UserInfoType) => (
-                    <tr key={user.user.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                        {user.user.username}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {user.user.email}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {user.phone_number}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {user.user.is_staff
-                          ? user.user.id == 1
-                            ? "ადმინი"
-                            : "კურიერი"
-                          : "კლიენტი"}
-                      </td>
-                      <td
-                        className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
-                        onClick={() => {
-                          setIsEditUser(true), setEditUser(user);
-                        }}
-                      >
-                        <EditFilled className="w-6 h-6 text-indigo-600 hover:text-indigo-900" />
-                      </td>
-                    </tr>
-                  ))}
+                  {userList
+                    .filter((item) =>
+                      role == "all" ? true : item.role == role
+                    )
+                    .map((user: UserInfoType) => (
+                      <tr key={user.user.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {user.user.username}
+                        </td>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
+                          {user.name}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {user.user.email}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {user.phone_number}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {user.role === "client" ? "კლიენტი" : "კურიერი"}
+                        </td>
+                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                          <EditFilled
+                            className="w-6 h-6 hover:opacity-70 hover:cursor-pointer"
+                            style={{ color: "#4f46e5" }}
+                            onClick={() => {
+                              setIsEditUser(true), setEditUser(user.id);
+                            }}
+                          />
+                          <DeleteOutlined
+                            className="w-6 h-6 color-red-600 hover:opacity-70 hover:cursor-pointer"
+                            style={{ color: "#cc2828" }}
+                            onClick={() => {
+                              setIsDelete(true);
+                              setDeleteId(user.user.id);
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -173,6 +225,7 @@ export default function UserList({
           setIsAddUser={setIsAddUser}
           setUserList={setUserList}
           mode="add"
+          userList={userList}
         />
       </Modal>
       {isEditUser && (
@@ -188,10 +241,13 @@ export default function UserList({
             setUserList={setUserList}
             userList={userList}
             mode="edit"
-            userData={editUser}
+            userId={editUser}
           />
         </Modal>
       )}
+      <Modal open={isDelete} onCancel={() => setIsDelete(false)} footer={null}>
+        <DeleteModal setIsDelete={setIsDelete} handleDelete={handleDelete} />
+      </Modal>
     </div>
   );
 }

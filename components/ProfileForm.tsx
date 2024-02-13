@@ -36,7 +36,7 @@ export default function ProfileForm({ user }: { user: UserType | undefined }) {
       const response = await fetch(
         `${process.env.API_URL}/users/${user?.user_data.id}/`,
         {
-          method: "PUT",
+          method: "PATCH",
           body: JSON.stringify(adminData),
           headers: {
             "Content-Type": "application/json",

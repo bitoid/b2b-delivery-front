@@ -19,6 +19,7 @@ interface ClientOrderType {
   courier_name: string;
   updated_at: string;
   order_position: number;
+  status_approved: boolean;
 }
 
 interface CommentProps {
