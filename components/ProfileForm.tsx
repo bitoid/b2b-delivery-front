@@ -3,6 +3,7 @@ import { useState } from "react";
 import { UserType } from "@/types/user";
 import { useForm } from "react-hook-form";
 import { message } from "antd";
+import { signOut } from "next-auth/react";
 
 export default function ProfileForm({ user }: { user: UserType | undefined }) {
   const [isEdit, setIsEdit] = useState(false);
@@ -47,6 +48,7 @@ export default function ProfileForm({ user }: { user: UserType | undefined }) {
 
       if (response.ok) {
         message.success("მომხმარებელი წარმატებით განახლდა");
+        await signOut();
         setIsEdit(false);
       } else {
         message.error("მომხმარებლის განახლება ვერ მოხერხდა");

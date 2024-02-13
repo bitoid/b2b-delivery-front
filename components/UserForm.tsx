@@ -35,6 +35,7 @@ export default function UserForm({
     handleSubmit,
     reset,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormData>();
 
@@ -136,7 +137,13 @@ export default function UserForm({
         }
       }
     } else {
-      delete (data as Partial<FormData>).user?.username;
+      if (
+        watch("user.username") ==
+        userList[userList?.findIndex((item) => item.id == userId)]?.user
+          .username
+      ) {
+        delete (data as Partial<FormData>).user?.username;
+      }
 
       if (selected == "client") {
         console.log(data);

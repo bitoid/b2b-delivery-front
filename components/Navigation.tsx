@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { NotificationType } from "@/types/notificaition";
 import { message } from "antd";
+import { signOut } from "next-auth/react";
 
 export default function Navigation({
   currentUser,
@@ -33,8 +34,10 @@ export default function Navigation({
     { name: "პროფილი", href: "/profile", listener: () => {} },
     {
       name: "სისტემიდან გასვლა",
-      href: "/login",
-      listener: () => {},
+      href: "",
+      listener: async () => {
+        await signOut();
+      },
     },
   ];
 
