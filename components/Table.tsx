@@ -189,7 +189,7 @@ const OrderTable: React.FC<{
       width: "110px",
       filters: [
         ...getUniques([...data.filter((item) => item.client)], "client_name"),
-        { text: "კლიენტის გარეშე", value: "კლიენტის გარეშე" },
+        { text: "კლიენტის გარეშე", value: "-1" },
       ],
       render: (text: string, record: ClientOrderType) =>
         record.client_name || "კლიენტის გარეშე",
@@ -206,7 +206,7 @@ const OrderTable: React.FC<{
       filters: [
         ...(couriers?.map((item) => ({ text: item.name, value: item.id })) ||
           []),
-        { text: "კურიერის გარეშე", value: "კურიერის გარეშე" },
+        { text: "კურიერის გარეშე", value: "-1" },
       ],
       render: (text: string, record: ClientOrderType) =>
         couriers?.find((item) => item.id == record.courier)?.name ||

@@ -59,6 +59,8 @@ export function getColorForStatus(status: string) {
       return "green";
     case "BK":
       return "black";
+    case "Pending Approval":
+      return "blue";
   }
 }
 
