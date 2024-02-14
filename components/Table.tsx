@@ -187,8 +187,12 @@ const OrderTable: React.FC<{
       title: "კლიენტი",
       dataIndex: "client",
       width: "110px",
-      filters: getUniques(data, "client_name"),
-      render: (text: string, record: ClientOrderType) => record.client_name,
+      filters: [
+        ...getUniques([...data.filter((item) => item.client)], "client_name"),
+        { text: "კლიენტის გარეშე", value: "კლიენტის გარეშე" },
+      ],
+      render: (text: string, record: ClientOrderType) =>
+        record.client_name || "კლიენტის გარეშე",
       filterSearch: true,
       filteredValue: filteredInfo?.client || null,
 
@@ -199,10 +203,14 @@ const OrderTable: React.FC<{
       dataIndex: "courier",
 
       width: "110px",
-      filters:
-        couriers?.map((item) => ({ text: item.name, value: item.id })) || [],
+      filters: [
+        ...(couriers?.map((item) => ({ text: item.name, value: item.id })) ||
+          []),
+        { text: "კურიერის გარეშე", value: "კურიერის გარეშე" },
+      ],
       render: (text: string, record: ClientOrderType) =>
-        couriers?.find((item) => item.id == record.courier)?.name || "...",
+        couriers?.find((item) => item.id == record.courier)?.name ||
+        "კურიერის გარეშე",
       filterSearch: true,
       filteredValue: filteredInfo?.courier || null,
 
@@ -652,6 +660,7 @@ const OrderTable: React.FC<{
   if (user?.user_data.user_type != "admin") {
     if (Array.isArray(rowSelection.selections)) {
       rowSelection.selections.splice(0, 1);
+      rowSelection.selections.splice(rowSelection.selections.length - 1, 1);
     }
   }
 

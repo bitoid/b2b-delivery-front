@@ -89,14 +89,33 @@ export default function Navigation({
                 </div>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                   <Menu as="div" className="relative ml-3">
-                    <div>
-                      <Menu.Button className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        <span className="absolute -inset-1.5" />
-                        <span className="sr-only">Open notifications</span>
+                    {currentUser?.user_data.user_type == "admin" && (
+                      <div>
+                        <Menu.Button className="relative flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                          <span className="absolute -inset-1.5" />
+                          <span className="sr-only">Open notifications</span>
 
-                        <BellIcon className="h-6 w-6" aria-hidden="true" />
-                      </Menu.Button>
-                    </div>
+                          <BellIcon className="h-6 w-6" aria-hidden="true" />
+                          {notifications.filter(
+                            (notification) =>
+                              notification.notification_type ==
+                                "status_updated" &&
+                              notification.is_read == false
+                          ).length > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+                              {
+                                notifications.filter(
+                                  (notification) =>
+                                    notification.notification_type ==
+                                      "status_updated" &&
+                                    notification.is_read == false
+                                ).length
+                              }
+                            </span>
+                          )}
+                        </Menu.Button>
+                      </div>
+                    )}
                     <Transition
                       as={Fragment}
                       enter="transition ease-out duration-200"
