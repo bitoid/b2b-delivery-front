@@ -10,7 +10,6 @@ import {
   Table,
   DatePicker,
   DatePickerProps,
-  Typography,
   message,
   Modal,
 } from "antd";
@@ -65,7 +64,6 @@ const OrderTable: React.FC<{
 }> = ({ data, searchParams, user, filteredOrders, couriers, clients }) => {
   let storedQuery = null;
   const { RangePicker } = DatePicker;
-  const { Text } = Typography;
 
   const [orders, setOrders] = useState<ClientOrderType[]>(filteredOrders || []);
   const [editInfo, setEditInfo] = useState<ClientOrderType>();
@@ -877,7 +875,7 @@ const OrderTable: React.FC<{
             dataSource={orders}
             onChange={onChange}
             footer={() => (
-              <div className="bg-white">
+              <div className="bg-red">
                 {user?.user_data.user_type != "courier" && (
                   <button
                     type="button"
@@ -930,42 +928,42 @@ const OrderTable: React.FC<{
 
               return (
                 <>
-                  <Table.Summary.Row className="absolute text-[15px]">
+                  <Table.Summary.Row className="absolute text-[15px] ">
                     <Table.Summary.Cell index={1} className="font-bold">
                       ჯამი
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={3}>
-                      <Text>ფასი: {totalPrice.toFixed(2)} ₾</Text>
+                      <p>ფასი: {totalPrice.toFixed(2)} ₾</p>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={4}>
-                      <Text>საკურიერო: {totalCourierFee.toFixed(2)} ₾</Text>
+                      <p>საკურიერო: {totalCourierFee.toFixed(2)} ₾</p>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} className="font-bold">
                       საშუალო
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={3}>
-                      <Text>
+                      <p>
                         ფასი:{" "}
                         {(
                           totalPrice / (selectedRowKeys.length || count)
                         ).toFixed(2)}
                         ₾
-                      </Text>
+                      </p>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={4}>
-                      <Text>
+                      <p>
                         საკურიერო:{" "}
                         {(
                           totalCourierFee / (selectedRowKeys.length || count)
                         ).toFixed(2)}{" "}
                         ₾
-                      </Text>
+                      </p>
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={2} className="font-bold">
                       რაოდენობა
                     </Table.Summary.Cell>
                     <Table.Summary.Cell index={3}>
-                      <Text>{selectedRowKeys.length || count}</Text>
+                      <p>{selectedRowKeys.length || count}</p>
                     </Table.Summary.Cell>
                   </Table.Summary.Row>
                 </>
