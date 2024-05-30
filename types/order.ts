@@ -20,6 +20,7 @@ interface ClientOrderType {
   updated_at: string;
   order_position: number;
   status_approved: boolean;
+  is_taken: boolean;
 }
 
 interface CommentProps {

@@ -27,11 +27,10 @@ export default function UserList({
 }) {
   const [isAddUser, setIsAddUser] = useState(false);
   const [isEditUser, setIsEditUser] = useState(false);
-  // const [role, setRole] = useState("ყველა");
-  const [userList, setUserList] = useState<UserInfoType[]>([
-    ...couriers,
-    ...clients,
-  ]);
+
+  const [userList, setUserList] = useState<UserInfoType[]>(
+    token ? [...couriers, ...clients] : []
+  );
 
   const [role, setRole] = useState<string>("all");
 
@@ -73,7 +72,7 @@ export default function UserList({
           },
         }
       );
-      console.log(userList);
+
       if (response.ok) {
         const newUsers = userList?.filter((user) => user.user.id !== deleteId);
 
@@ -85,7 +84,7 @@ export default function UserList({
         message.error("მომხმარებლის წაშლა ვერ მოხერხდა");
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 

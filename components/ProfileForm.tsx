@@ -27,7 +27,6 @@ export default function ProfileForm({ user }: { user: UserType | undefined }) {
   });
 
   const onSubmit = async (data: UserType) => {
-    console.log(data);
     const adminData = {
       username: data.user_data.username,
       email: data.user_data.profile.email,
@@ -72,7 +71,6 @@ export default function ProfileForm({ user }: { user: UserType | undefined }) {
     }
   };
 
-  console.log(user);
   return (
     <form className="overflow-hidden bg-white shadow sm:rounded-lg p-3">
       <div className="px-4 sm:px-0">

@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { TableContext } from "@/context/tableContext";
 import { DeleteFilled } from "@ant-design/icons";
 import InputMask from "react-input-mask";
+import Checkbox from "antd/es/checkbox/Checkbox";
 
 export default function OrderForm({
   order,
@@ -18,6 +19,8 @@ export default function OrderForm({
   setIsDelete?: (isDelete: boolean) => void;
   mode: "edit" | "add";
 }) {
+  const context = useContext(TableContext);
+
   const {
     register,
     handleSubmit,
@@ -27,7 +30,14 @@ export default function OrderForm({
     // formState: { errors },
   } = useForm<ClientOrderType>({
     defaultValues: {
-      status: mode == "add" ? "DF" : order?.status,
+      status:
+        mode == "add"
+          ? "DF"
+          : context.user?.user_data.user_type == "courier"
+          ? order?.status_approved
+            ? order.status
+            : order?.staged_status
+          : order?.status,
       address: order?.address,
       city: order?.city,
       comment: order?.comment,
@@ -37,14 +47,20 @@ export default function OrderForm({
       addressee_full_name: order?.addressee_full_name,
       client: order?.client,
       courier: order?.courier,
+      is_taken: order?.is_taken,
     },
   });
 
-  console.log(order);
-
   useEffect(() => {
     reset({
-      status: mode == "add" ? "DF" : order?.status,
+      status:
+        mode == "add"
+          ? "DF"
+          : context.user?.user_data.user_type == "courier"
+          ? order?.status_approved
+            ? order.status
+            : order?.staged_status
+          : order?.status,
       address: order?.address,
       city: order?.city,
       comment: order?.comment,
@@ -54,10 +70,9 @@ export default function OrderForm({
       addressee_full_name: order?.addressee_full_name,
       client: order?.client,
       courier: order?.courier,
+      is_taken: order?.is_taken,
     });
   }, []);
-
-  const context = useContext(TableContext);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -269,8 +284,26 @@ export default function OrderForm({
               </div>
             </>
           )}
+          {context.user?.user_data.user_type == "admin" && (
+            <div className="sm:col-span-3">
+              <Controller
+                name="is_taken"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    className="font-medium"
+                    {...field}
+                    defaultChecked={order?.is_taken}
+                  >
+                    საწყობიდან გატანილია
+                  </Checkbox>
+                )}
+              />
+            </div>
+          )}
+
           {mode == "edit" && context?.user?.user_data.user_type != "client" && (
-            <div className="sm:col-span-3 " id="table-select">
+            <div className="sm:col-span-4 " id="table-select">
               <label
                 htmlFor="postal-code"
                 className="block text-sm font-medium leading-6 text-gray-900 pb-2"

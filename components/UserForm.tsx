@@ -81,7 +81,6 @@ export default function UserForm({
   }, []);
 
   const onSubmit = async (data: FormData) => {
-    console.log(mode, selected);
     if (mode == "add") {
       if (selected == "client") {
         try {
@@ -146,7 +145,6 @@ export default function UserForm({
       }
 
       if (selected == "client") {
-        console.log(data);
         try {
           message.config({ maxCount: 1 });
           message.loading("დაელოდეთ...");
@@ -188,7 +186,6 @@ export default function UserForm({
       } else {
         delete (data as Partial<FormData>).addresses;
         delete (data as Partial<FormData>).representative_full_name;
-        console.log("სსს");
 
         try {
           message.config({ maxCount: 1 });
@@ -304,21 +301,21 @@ export default function UserForm({
               {mode == "add" && (
                 <div className="sm:col-span-3">
                   <label
-                    htmlFor="email"
+                    htmlFor="password"
                     className="block text-sm font-bold leading-6 text-gray-900"
                   >
                     პაროლი
                   </label>
                   <div className="mt-2">
                     <input
-                      id="email"
+                      id="password"
                       type="password"
                       {...register("user.password", {
                         required: true,
                       })}
                       className="block w-full outline-none rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       style={
-                        errors.user?.email ? { border: "1px solid red" } : {}
+                        errors.user?.password ? { border: "1px solid red" } : {}
                       }
                     />
                   </div>

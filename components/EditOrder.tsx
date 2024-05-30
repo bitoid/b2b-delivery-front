@@ -46,7 +46,7 @@ export default function EditOrder({
 }) {
   const context = useContext(TableContext);
   const [isDelete, setIsDelete] = useState(false);
-  console.log(isDelete);
+
   const handleDelete = async () => {
     const deletedOrder = context.orders.find((item) => item.id == order.id);
     try {
@@ -62,7 +62,6 @@ export default function EditOrder({
         }
       );
 
-      console.log(response);
       if (response.ok) {
         deletedOrder &&
           context.orders.splice(context.orders.indexOf(deletedOrder), 1);
@@ -87,14 +86,13 @@ export default function EditOrder({
     }
     if (modifiedData.status == "Pending Approval") modifiedData.status = "DF";
 
-    console.log(modifiedData);
     modifiedData.created_at = order.created_at;
 
     try {
       message.config({ maxCount: 1 });
       message.loading("დაელოდეთ...");
       const response = await fetch(
-        `${process.env.API_URL}/orders/${order.id}`,
+        `${process.env.API_URL}/orders/${order.id}/`,
         {
           method: "PATCH",
           headers: {

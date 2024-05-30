@@ -13,17 +13,14 @@ const authOptions: NextAuthOptions = {
         password: { label: "password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(
-          `https://b2bapi-73c651c12de9.herokuapp.com/api/login/`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              username: credentials?.username,
-              password: credentials?.password,
-            }),
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        const res = await fetch(`http://64.227.117.209:1337/api/login/`, {
+          method: "POST",
+          body: JSON.stringify({
+            username: credentials?.username,
+            password: credentials?.password,
+          }),
+          headers: { "Content-Type": "application/json" },
+        });
 
         const user = await res.json();
 

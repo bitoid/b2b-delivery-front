@@ -4,7 +4,8 @@ import OrderTable from "@/components/Table";
 import { getCurrentUser } from "@/lib/session";
 import queryString from "query-string";
 import SearchParamsType from "@/types/searchParams";
-import { getClients, getCouriers } from "../users/page";
+import { getClients, getCouriers } from "../../../lib/getUsers";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "გაგზავნილი შეკვეთები",
@@ -16,6 +17,10 @@ export default async function OrdersPage({
   searchParams: SearchParamsType;
 }) {
   const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
 
   const filteredOrders: ClientOrderType[] =
     (await getFilteredOrders(user?.token, searchParams)) || [];
@@ -66,7 +71,7 @@ const getFilteredOrders = async (
 
     return data;
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
@@ -86,6 +91,6 @@ export const getOrders = async (token: string | undefined) => {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };

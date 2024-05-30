@@ -49,7 +49,119 @@ export default function Navigation({
     setNotifications(notificationsData);
   }, []);
 
-  console.log(notificationsData);
+  const notificationsToShow = notifications
+    ?.filter(
+      (notification) =>
+        notification.notification_type == "status_updated" &&
+        notification.is_read == false
+    )
+    .map((notification) => {
+      return (
+        <li
+          key={notification.order}
+          className="flex justify-between px-4 py-2  gap-2  text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition-colors duration-200 ease-in-out border-b-2 border-gray-100"
+        >
+          <span className="font-semibold">
+            შეიცვალა შეკვეთის (კოდით {notification.order}) სტატუსი:{" "}
+            <span
+              className="font-bold"
+              style={{
+                color: getColorForStatus(notification.new_status),
+              }}
+            >
+              {getStatusName(notification.new_status)}
+            </span>
+          </span>
+          <div className="flex flex-col md:flex-row gap-1">
+            <button
+              className="mr-2 w-full bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors duration-200 ease-in-out"
+              onClick={async () => {
+                message.loading("დაელოდეთ...");
+                try {
+                  const response = await fetch(
+                    `${process.env.API_URL}/orders/${notification.order}/approve_status/`,
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Token ${currentUser?.token}`,
+                      },
+                    }
+                  );
+                  const response2 = await fetch(
+                    `${process.env.API_URL}/notifications/${notification.id}/`,
+                    {
+                      method: "PUT",
+                      body: JSON.stringify({
+                        is_read: true,
+                      }),
+                      headers: {
+                        Authorization: `Token ${currentUser?.token}`,
+                      },
+                    }
+                  );
+                  if (response.ok && response2.ok) {
+                    message.success("სტატუსი დადასტურებულია");
+                    const newNotifications = notifications.filter(
+                      (item) => item.id != notification.id
+                    );
+                    setNotifications(newNotifications);
+                  } else {
+                    message.error("დაფიქსირდა შეცდომა");
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              დადასტურება
+            </button>
+            <button
+              className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors duration-200 ease-in-out"
+              onClick={async () => {
+                try {
+                  message.loading("დაელოდეთ...");
+                  const response = await fetch(
+                    `${process.env.API_URL}/orders/${notification.order}/disapprove_status/`,
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Token ${currentUser?.token}`,
+                      },
+                    }
+                  );
+                  const response2 = await fetch(
+                    `${process.env.API_URL}/notifications/${notification.id}/`,
+                    {
+                      method: "PUT",
+                      body: JSON.stringify({
+                        is_read: true,
+                      }),
+                      headers: {
+                        Authorization: `Token ${currentUser?.token}`,
+                      },
+                    }
+                  );
+
+                  if (response.ok && response2.ok) {
+                    message.success("სტატუსი უარყოფილია");
+                    const newNotifications = notifications.filter(
+                      (item) => item.id != notification.id
+                    );
+                    setNotifications(newNotifications);
+                  } else {
+                    message.error("დაფიქსირდა შეცდომა");
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              უარყოფა
+            </button>
+          </div>
+        </li>
+      );
+    });
 
   return (
     <>
@@ -96,7 +208,7 @@ export default function Navigation({
                           <span className="sr-only">Open notifications</span>
 
                           <BellIcon className="h-6 w-6" aria-hidden="true" />
-                          {notifications.filter(
+                          {notifications?.filter(
                             (notification) =>
                               notification.notification_type ==
                                 "status_updated" &&
@@ -125,133 +237,15 @@ export default function Navigation({
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute w-[300px] md:w-[500px] right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items className="absolute w-[300px] md:w-[500px] right-[-70px] md:right-0 z-10 mt-2 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-[60vh] overflow-auto custom-scroll">
                         <ul>
-                          {notifications
-                            .filter(
-                              (notification) =>
-                                notification.notification_type ==
-                                  "status_updated" &&
-                                notification.is_read == false
-                            )
-                            .map((notification) => {
-                              return (
-                                <li
-                                  key={notification.order}
-                                  className="flex justify-between px-4 py-2  gap-2  text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 cursor-pointer transition-colors duration-200 ease-in-out border-b-2 border-gray-100"
-                                >
-                                  <span className="font-semibold">
-                                    შეიცვალა შეკვეთის (კოდით{" "}
-                                    {notification.order}) სტატუსი:{" "}
-                                    <span
-                                      className="font-bold"
-                                      style={{
-                                        color: getColorForStatus(
-                                          notification.new_status
-                                        ),
-                                      }}
-                                    >
-                                      {getStatusName(notification.new_status)}
-                                    </span>
-                                  </span>
-                                  <div className="flex flex-col md:flex-row gap-1">
-                                    <button
-                                      className="mr-2 w-full bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors duration-200 ease-in-out"
-                                      onClick={async () => {
-                                        message.loading("დაელოდეთ...");
-                                        try {
-                                          const response = await fetch(
-                                            `${process.env.API_URL}/orders/${notification.order}/approve_status/`,
-                                            {
-                                              method: "POST",
-                                              headers: {
-                                                Authorization: `Token ${currentUser?.token}`,
-                                              },
-                                            }
-                                          );
-                                          const response2 = await fetch(
-                                            `${process.env.API_URL}/notifications/${notification.id}/`,
-                                            {
-                                              method: "PUT",
-                                              body: JSON.stringify({
-                                                is_read: true,
-                                              }),
-                                              headers: {
-                                                Authorization: `Token ${currentUser?.token}`,
-                                              },
-                                            }
-                                          );
-                                          if (response.ok && response2.ok) {
-                                            message.success(
-                                              "სტატუსი დადასტურებულია"
-                                            );
-                                            const newNotifications =
-                                              notifications.filter(
-                                                (item) =>
-                                                  item.id != notification.id
-                                              );
-                                            setNotifications(newNotifications);
-                                          } else {
-                                            message.error("დაფიქსირდა შეცდომა");
-                                          }
-                                        } catch (err) {
-                                          console.log(err);
-                                        }
-                                      }}
-                                    >
-                                      დადასტურება
-                                    </button>
-                                    <button
-                                      className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors duration-200 ease-in-out"
-                                      onClick={async () => {
-                                        try {
-                                          message.loading("დაელოდეთ...");
-                                          const response = await fetch(
-                                            `${process.env.API_URL}/orders/${notification.order}/disapprove_status/`,
-                                            {
-                                              method: "POST",
-                                              headers: {
-                                                Authorization: `Token ${currentUser?.token}`,
-                                              },
-                                            }
-                                          );
-                                          const response2 = await fetch(
-                                            `${process.env.API_URL}/notifications/${notification.id}/`,
-                                            {
-                                              method: "PUT",
-                                              body: JSON.stringify({
-                                                is_read: true,
-                                              }),
-                                              headers: {
-                                                Authorization: `Token ${currentUser?.token}`,
-                                              },
-                                            }
-                                          );
-
-                                          if (response.ok && response2.ok) {
-                                            message.success(
-                                              "სტატუსი უარყოფილია"
-                                            );
-                                            const newNotifications =
-                                              notifications.filter(
-                                                (item) =>
-                                                  item.id != notification.id
-                                              );
-                                            setNotifications(newNotifications);
-                                          } else {
-                                            message.error("დაფიქსირდა შეცდომა");
-                                          }
-                                        } catch (err) {
-                                          console.log(err);
-                                        }
-                                      }}
-                                    >
-                                      უარყოფა
-                                    </button>
-                                  </div>
-                                </li>
-                              );
-                            })}
+                          {notificationsToShow.length > 0 ? (
+                            notificationsToShow
+                          ) : (
+                            <li className="px-4 py-2 text-sm text-gray-700">
+                              შეტყობინებები არ არის
+                            </li>
+                          )}
                         </ul>
                       </Menu.Items>
                     </Transition>

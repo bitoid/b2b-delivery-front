@@ -313,9 +313,10 @@ const OrderTable: React.FC<{
               components: {
                 Select: {
                   optionSelectedBg: getColorForStatus(
-                    user?.user_data.user_type == "courier" &&
-                      !record.status_approved
-                      ? record.staged_status
+                    user?.user_data.user_type == "courier"
+                      ? !record.status_approved
+                        ? record.staged_status
+                        : record.status
                       : record.status
                   ),
 
@@ -585,9 +586,8 @@ const OrderTable: React.FC<{
             } else {
               message.error("მესიჯის გაგზავნა ვერ მოხერხდა");
             }
-            console.log(response);
           } catch (err) {
-            console.log(err);
+            console.error(err);
           }
         },
       },
@@ -671,7 +671,7 @@ const OrderTable: React.FC<{
       return;
     }
     try {
-      const response = await fetch(`${process.env.API_URL}/orders/${key}`, {
+      const response = await fetch(`${process.env.API_URL}/orders/${key}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -705,7 +705,6 @@ const OrderTable: React.FC<{
     setIsEdit(true);
   };
 
-  console.log(editInfo);
   const onChange: TableProps<ClientOrderType>["onChange"] = (
     pagination,
     filters,
@@ -1039,7 +1038,7 @@ const OrderTable: React.FC<{
             placeholder="აირჩიეთ კურიერი"
             className="w-full"
             dropdownStyle={{ width: "200px" }}
-            options={couriers.map((courier) => ({
+            options={couriers?.map((courier) => ({
               label: courier.name,
               value: courier.id,
             }))}

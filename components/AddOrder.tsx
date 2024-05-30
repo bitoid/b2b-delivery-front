@@ -44,7 +44,6 @@ export default function AddOrder({
       });
       const newOrder = await response.json();
 
-      console.log(newOrder);
       if (response.ok) {
         setOrders([...orders, newOrder]);
         message.success("შეკვეთა წარმატებით დაემატა");
