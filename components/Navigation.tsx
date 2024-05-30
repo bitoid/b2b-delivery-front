@@ -15,8 +15,7 @@ import { usePathname } from "next/navigation";
 import { UserType } from "@/types/user";
 import { NotificationType } from "@/types/notificaition";
 import { message } from "antd";
-// import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 export default function Navigation({
   currentUser,
@@ -25,7 +24,7 @@ export default function Navigation({
   currentUser: UserType | undefined;
   notificationsData: NotificationType[];
 }) {
-  const router = useRouter();
+  // const router = useRouter();
   const navigation = currentUser
     ? [{ name: "გაგზავნილი შეკვეთები", href: "/orders" }]
     : [];
