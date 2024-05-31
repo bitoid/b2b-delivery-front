@@ -447,6 +447,18 @@ const OrderTable: React.FC<{
           : undefined,
     },
     {
+      title: "საწყობიდან გატანილია",
+      dataIndex: "is_taken",
+      filteredValue: filteredInfo?.is_taken || null,
+      filters: ["True", "False"].map((item) => ({
+        text: item == "True" ? "კი" : "არა",
+        value: item,
+      })),
+      width: "130px",
+      render: (text: boolean) => (text ? "კი" : "არა"),
+    },
+
+    {
       title: "თარიღი",
       dataIndex: "created_at",
       sorter: (a, b) =>
