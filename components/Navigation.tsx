@@ -77,6 +77,7 @@ export default function Navigation({
               className="mr-2 w-full bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors duration-200 ease-in-out"
               onClick={async () => {
                 message.loading("დაელოდეთ...");
+                message.config({ maxCount: 1 });
                 try {
                   const response = await fetch(
                     `${process.env.API_URL}/orders/${notification.order}/approve_status/`,

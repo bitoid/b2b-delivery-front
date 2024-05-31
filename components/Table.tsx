@@ -28,7 +28,6 @@ import {
 } from "antd/es/table/interface";
 import { useRouter } from "next/navigation";
 import { EditFilled, PhoneFilled, MessageFilled } from "@ant-design/icons";
-// import BlackScreen from "./BlackScreen";
 import EditOrder, { DeleteModal } from "./EditOrder";
 import { ClearOutlined } from "@ant-design/icons";
 import { UserInfoType, UserType } from "@/types/user";
@@ -669,18 +668,23 @@ const OrderTable: React.FC<{
       return;
     }
     try {
-      const response = await fetch(`${process.env.API_URL}/orders/${key}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${user?.token}`,
-        },
-        body: JSON.stringify(
-          user?.user_data.user_type == "admin"
-            ? { status: value }
-            : { staged_status: value }
-        ),
-      });
+      const response = await fetch(
+        user?.user_data.user_type === "admin"
+          ? `${process.env.API_URL}/orders/${key}/update_status_manually/`
+          : `${process.env.API_URL}/orders/${key}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${user?.token}`,
+          },
+          body: JSON.stringify(
+            user?.user_data.user_type == "admin"
+              ? { status: value }
+              : { staged_status: value }
+          ),
+        }
+      );
 
       if (response.ok) {
         setOrders((prevOrders) =>
